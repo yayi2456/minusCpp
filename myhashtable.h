@@ -6,6 +6,7 @@
 #include<hash_map>
 using namespace stdext;
 const int hashlength = 128;
+
 //将会存进符号表的
 //typedef enum { INTT, CHART, INTST, CHARST, FLOATT, FLOATST }AttrType;
 class Node {
@@ -18,7 +19,7 @@ public:
 	TreeNode* value;//是对应TreeNode的地址,主要用于函数
 	int szsize;
 	//新的符号表中的类型
-	Ctype*exptype;
+	CType*exptype;
 	Node(string classname) {
 		this->classname = classname;
 	}
@@ -48,7 +49,7 @@ public:
 		this->attri = attri;
 	}
 	//新的类型的设置
-	void setType(Ctype*t) {
+	void setType(CType*t) {
 		exptype = t;
 	}
 	void setVal(TreeNode* value) {
@@ -175,34 +176,8 @@ public:
 	}
 };
 
-//由于涉及到对函数以及类的类型检查。因此类型检查放在最后，在语法树建立之后完成
-//语法树建立完成之后只有叶子结点才会有类型
-static bool checkType(TreeNode*node, hash_map<string, ClassNode*>cn, hash_map<string, Node*>fn) {
 
-	return true;
-}
-//返回0ok，返回-1不可以，返回1代表做了类型转换
-//类 比较特殊，只有名字完全一样才能算一样，不可能做类型转换
-//可能会提供 强制类型转换 看看完成时间
-//目前只支持int float char 之间的转换，涉及指针数组的目前一律不理
-static int checkEqual(CType*t1, CType*t2) {
-	if (t1->tcode == t2->tcode && t1->tcode!=4)return 0;
-	if (t1->tcode == 3 || t1->tcode==2 || t1->tcode==1){//float
-		if (t2->tcode <= 3 && t2->tcode != 0) {
-			return 1;
-		}
-		else return -1;
-	}
-	else if (t1->tcode == 4 && t2->tcode == 4) {
-		if (t1->cname == t2->cname)return 0;
-		else return -1;
-	}
-	
-	else {
-		return -1;
-	}
-	return 0;
-}
+
 
 
 

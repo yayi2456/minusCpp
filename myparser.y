@@ -19,17 +19,20 @@ Date: 2017年12月2日
 #include "mytreenode.h"
 #include"myhashtable.h"
 #include"mytype.h"
+#include"typemiddle.h"
 
 using namespace std;
 
 extern stack<CHash*> allsymbol;
 extern stack<CHash*>storesymbol;
-CHash*classname;//为了支持类操作，检查类类型。
+//CHash*classname;//为了支持类操作，检查类类型。
 extern int lineno;
 ExpType nowattri;
 BaseType nowcode;
 string nowclass;
 TreeNode*startnode;
+
+
 ofstream rout("result.txt");
 ofstream trout("tree.txt");
 
@@ -86,7 +89,9 @@ string getOp(OpType op){
 	if(op== ALGCTADDPK )return "++";
 	if(op== ALGCTADDBK )return "++";
 	if(op== ALGCTMINUSBK )return "--";
-	if(op==CLASSMCK)return "->/.";
+	if(op==CLASSMCK)return "->";
+	if(op==POINTK)return ".";
+	return "none";
 }
 string getVal(TreeNode*s){
 	if(s->kind.exp!=CONSTK)return "error";
@@ -282,7 +287,11 @@ start:	startinfo	{$$=$1;startnode=$$;cout<<"start1"<<endl;}
 	|	start startinfo{$$=newStmtsNode(STARTK);
 						$$->child[0]=$1;
 						$$->child[1]=$2;
+						//结合代码
+						$$->midcode=Fcodes::combinecode($1->midcode,$2->midecode);
+						//---
 						startnode=$$;
+						
 						cout<<"start 2"<<endl;}
 	;
 
@@ -298,10 +307,6 @@ startinfo:
 //	|	basetypestmt
 	;
 
-
-//idequ: ID EQ idequ{cout<<"idequ"<<endl;}
-//	|	ID EQ	{cout<<"ideq"<<endl;}
-//	;
 
 basetype:	INT	{$$=newTypeNode(INTK);$$->exptype=new CType(CINT);nowattri=INTK;nowcode=CINT;}
 	|	CHAR	{$$=newTypeNode(CHARK);$$->exptype=new CType(CCHAR);nowattri=CHARK;nowcode=CCHAR;}
@@ -327,6 +332,8 @@ idlistwithvar:	idlistwithvar COMMA ID{
 					if(nowattri==NOTK)addr->classname=nowclass;
 					$$=$3;
 					$3->sibling=$1;
+					//可能的中阿锦代码的设置
+					$$->midcode=$1->midcode;
 					
 				}
 	|	ID		{	//cout<<"hhh"<<endl;
@@ -336,7 +343,7 @@ idlistwithvar:	idlistwithvar COMMA ID{
 					
 					Node*addr=allsymbol.top()->findexist($1->attri.name);
 					if(addr==NULL){
-						Node n*=new Node("ID",$1->attri.name);
+						Node *n=new Node("ID",$1->attri.name);
 						n->setType($1->exptype);
 						addr=allsymbol.top()->insert(n);
 						cout<<$1->attri.name<<":my addr is:"<<allsymbol.top()<<" : "<<addr<<endl;
@@ -346,7 +353,7 @@ idlistwithvar:	idlistwithvar COMMA ID{
 					addr->attri=nowattri;
 					if(nowattri==NOTK)addr->classname=nowclass;
 					$$=$1;
-					
+					//不可能有中间代码
 					
 					}
 	//
@@ -371,6 +378,8 @@ idlistwithvar:	idlistwithvar COMMA ID{
 					tmp->child[0]=$3;
 					tmp->child[1]=$5;
 					$$->sibling=$1;	
+					//设置中间代码：（赋值语句）
+					$$->
 					
 					}
 	|	ID EQ expr	{
@@ -452,7 +461,7 @@ idlistwithvar:	idlistwithvar COMMA ID{
 					Node*addr=allsymbol.top()->findexist($2->attri.name);
 					if(addr==NULL){
 						Node*n=new Node("ID",$2->attri.name);
-						n->seType($2->exptype);
+						n->setType($2->exptype);
 						addr=allsymbol.top()->insert(n);
 						cout<<$2->attri.name<<":my addr is:"<<allsymbol.top()<<" : "<<addr<<endl;
 					}
@@ -547,7 +556,7 @@ valueexpr:	ID			{
 	|	ALGCTADD valueexpr %prec ALGCTADDP		{$$=makenodeS($2,ALGCTADDPK);}
 	|	ALGCTMINUS valueexpr %prec ALGCTMINUSP	{$$=makenodeS($2,ALGCTMINUSPK);}
 	|	LBRACESS valueexpr RBRACESS	{$$=$2;}
-	|	valueexpr POINT valueexpr	%prec CLASSMC {$$=makenodeT($1,$3,CLASSMCK);}
+	|	valueexpr POINT valueexpr	%prec CLASSMC {$$=makenodeT($1,$3,POINTK);}
 //	|	LBRACESS valueexpr RBRACESS {$$=$2;}
 	;
 calexpr	:	expr ALGCADD expr %prec ALGCADD	{$$=makenodeT($1,$3,ALGCADDK);}
@@ -587,11 +596,11 @@ calexpr	:	expr ALGCADD expr %prec ALGCADD	{$$=makenodeT($1,$3,ALGCADDK);}
 					//这是因为这时的func符号表尚未完全
 	|	ID LBRACESS exprlist RBRACESS %prec FUNCUSE	{$$=makenodeT($1,$3,FUNCK);}
 	|	valueexpr CLASSMC ID LBRACESS exprlist RBRACESS %prec FUNCUSE	{TreeNode*t=makenodeT($3,$5,FUNCK);$$=makenodeT($1,t,CLASSMCK);}
-	|	valueexpr POINT ID LBRACESS exprlist RBRACESS %prec FUNCUSE	{TreeNode*t=makenodeT($3,$5,FUNCK);$$=makenodeT($1,t,CLASSMCK);}
+	|	valueexpr POINT ID LBRACESS exprlist RBRACESS %prec FUNCUSE	{TreeNode*t=makenodeT($3,$5,FUNCK);$$=makenodeT($1,t,POINTK);}
 	
 	|	ID LBRACESS  RBRACESS %prec FUNCUSE	{$$=makenodeS($1,FUNCK);}
 	|	valueexpr CLASSMC ID LBRACESS  RBRACESS %prec FUNCUSE	{TreeNode*t=makenodeS($3,FUNCK);$$=makenodeT($1,t,CLASSMCK);}
-	|	valueexpr POINT ID LBRACESS  RBRACESS %prec FUNCUSE	{TreeNode*t=makenodeS($3,FUNCK);$$=makenodeT($1,t,CLASSMCK);}
+	|	valueexpr POINT ID LBRACESS  RBRACESS %prec FUNCUSE	{TreeNode*t=makenodeS($3,FUNCK);$$=makenodeT($1,t,POINTK);}
 	//左值
 	|	expr EQ expr	%prec EQ	{$$=makenodeT($1,$3,EQUEK);}
 //	|	valueexpr EQ expr %prec EQ	{$$=makenodeT($1,$3,EQUEK);}//赋值表达式
@@ -966,7 +975,7 @@ funcdef:	basetype ID LBRACESS typeidlist RBRACESS comstmt	{
 					else{
 						Node*n=new Node("FUNC",$2->attri.name);
 						n->setType($1->exptype);
-						funcmap[$2->attri.name]=n//$$;
+						funcmap[$2->attri.name]=n;//$$;
 						cout<<$2->attri.name<<":my addr is:"<<funcmap[$2->attri.name]<<endl;
 					}
 					
@@ -984,7 +993,7 @@ funcdef:	basetype ID LBRACESS typeidlist RBRACESS comstmt	{
 					else{
 						Node*n=new Node("FUNC",$3->attri.name);
 						n->setType($1->exptype);
-						funcmap[$3->attri.name]=n//$$;
+						funcmap[$3->attri.name]=n;//$$;
 						cout<<$3->attri.name<<":my addr is:"<<funcmap[$3->attri.name]<<endl;
 					}
 }
@@ -998,8 +1007,8 @@ funcdef:	basetype ID LBRACESS typeidlist RBRACESS comstmt	{
 					if(funcmap.find($2->attri.name)!=funcmap.end())rout<<"error at line :"<<lineno<<" redefined func:"<<$2->attri.name<<endl; 
 					else{
 						Node*n=new Node("FUNC",$2->attri.name);
-						n->setType($1->exptype)
-						funcmap[$2->attri.name]=//$$;
+						n->setType($1->exptype);
+						funcmap[$2->attri.name]=n;//$$;
 						cout<<$2->attri.name<<":my addr is:"<<funcmap[$2->attri.name]<<endl;
 					}
 	
@@ -1015,7 +1024,9 @@ funcdef:	basetype ID LBRACESS typeidlist RBRACESS comstmt	{
 					$$->sibling=$6;
 					if(funcmap.find($3->attri.name)!=funcmap.end())rout<<"error at line :"<<lineno<<" redefined func:"<<$3->attri.name<<endl; 
 					else{
-						funcmap[$3->attri.name]=new Node("FUNC",$3->attri.name);//$$;
+						Node*n=new Node("FUNC",$3->attri.name);
+						n->setType($1->exptype);
+						funcmap[$3->attri.name]=n;//$$;
 						cout<<$3->attri.name<<":my addr is:"<<funcmap[$3->attri.name]<<endl;
 					}
 }
@@ -1050,6 +1061,9 @@ protype:	PUBLIC
 	|	PRIVATE
 	|	PROTECTED
 	;//我也不懂为啥要这个...有很大概率应该是不会实现了...*/
+	
+
+//类的符号在遍历语法树的时候创建并检查
 
 inclass:
 
@@ -1239,6 +1253,7 @@ int main(int argc, char *argv[])
 int n = 1;
 	
 //	allsymbol.push(symbtb);
+	Fcode::initnum();
 	mylexer lexer;
 	myparser parser;
 	if (parser.yycreate(&lexer)) {

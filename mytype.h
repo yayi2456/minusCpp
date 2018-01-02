@@ -7,7 +7,7 @@
 //o没错就是
 using namespace std;
 typedef enum { CVOID=0,CINT=1, CCHAR=2 , CFLOAT=3 , CCLASS=4,CSTRING }BaseType;//3
-typedef enum { POINTER = 1, ARRAY = 2, DICAR, RECORD }FuncType;//3
+typedef enum { POINTER = 1, ARRAY = 2, DICAR, RECORD,FUNC }FuncType;//3
 class TypeNode {
 public:
 	BaseType baset;
@@ -35,6 +35,7 @@ public:
 	int num;
 	TypeNode*root;
 	string cname;
+
 	CType() { tcode = 0; root = NULL; num = 3; }
 	CType(BaseType type) {//每次都会从基本类型开始构建
 		tcode = type;
@@ -75,6 +76,7 @@ public:
 	//注意！返回一旦为负，说明溢出。这个时候是不太可能得到正确的结果的，因此直接算不允许发生的情况了
 	 int addcode(FuncType f) {
 		 int i = num;
+		 num += 3;
 		if(3+i<=32)
 			switch (f) {
 			case POINTER:
@@ -93,9 +95,17 @@ public:
 	}
 	 int addcoded(CType*r) {
 		int i = num, j = r->num;
+		num += (3 + j);
 		if (tcode + r->tcode + 3 <= 32)return (tcode << (i + 3)) + (DICAR << i) + r->tcode;
 		else return -1;
 	}
+	 int addcodef(CType*r) {
+		 int i = num, j = r->num;
+		 num += (3 + j);
+		 if (tcode + r->tcode + 3 <= 32)return (tcode << (i + 3)) + (FUNC << i) + r->tcode;
+		 else return -1;
+
+	 }
 	static CType* pointer(CType*type) {
 		TypeNode*node=new TypeNode(POINTER, type->root, NULL);
 		type->tcode = type->addcode(POINTER);
@@ -118,6 +128,12 @@ public:
 	static CType* dicar(CType*type, CType*t) {
 		TypeNode*node = new TypeNode(DICAR, type->root, t->root);
 		type->tcode = type->addcoded(t);
+		type->root = node;
+		return type;
+	}
+	static CType*func(CType*type, CType*t) {
+		TypeNode*node = new TypeNode(FUNC, type->root, t->root);
+		type->tcode = type->addcodef(t);
 		type->root = node;
 		return type;
 	}

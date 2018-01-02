@@ -19,7 +19,7 @@
 # YACC verbose file generated from myparser.y.
 # 
 # Date: 01/02/18
-# Time: 14:41:22
+# Time: 22:59:50
 # 
 # AYACC Version: 2.07
 #############################################################################
@@ -203,20 +203,20 @@ state 0
 	CLASS  shift 5
 	ID  shift 6
 
-	basetypestmt  goto 7
+	start  goto 7
 	classdef  goto 8
 	funcdef  goto 9
 	funcdefmain  goto 10
-	basetype  goto 11
-	startinfo  goto 12
-	start  goto 13
+	startinfo  goto 11
+	basetypestmt  goto 12
+	basetype  goto 13
 	among  goto 14
 
 
 state 1
 	basetype : INT .  (7)
-	funcdefmain : INT . MAIN LBRACESS RBRACESS comstmt
 	funcdefmain : INT . MAIN LBRACESS error comstmt
+	funcdefmain : INT . MAIN LBRACESS RBRACESS comstmt
 
 	MAIN  shift 15
 	.  reduce 7
@@ -253,9 +253,24 @@ state 6
 
 
 state 7
-	startinfo : basetypestmt .  (4)
+	$accept : start . $end  (0)
+	start : start . startinfo
 
-	.  reduce 4
+	$end  accept
+	INT  shift 1
+	FLOAT  shift 2
+	CHAR  shift 3
+	VOID  shift 4
+	CLASS  shift 5
+	ID  shift 6
+
+	classdef  goto 8
+	funcdef  goto 9
+	funcdefmain  goto 10
+	startinfo  goto 17
+	basetypestmt  goto 12
+	basetype  goto 13
+	among  goto 14
 
 
 state 8
@@ -277,43 +292,28 @@ state 10
 
 
 state 11
-	basetypestmt : basetype . idlistwithvar SEMI
-	funcdef : basetype . ALGCMUL ID LBRACESS typeidlist RBRACESS comstmt
-	funcdef : basetype . ID LBRACESS typeidlist RBRACESS comstmt
-	funcdef : basetype . ID LBRACESS RBRACESS comstmt
-	funcdef : basetype . ALGCMUL ID LBRACESS RBRACESS comstmt
-
-	ALGCMUL  shift 17
-	ID  shift 18
-
-	idlistwithvar  goto 19
-
-
-state 12
 	start : startinfo .  (1)
 
 	.  reduce 1
 
 
+state 12
+	startinfo : basetypestmt .  (4)
+
+	.  reduce 4
+
+
 state 13
-	$accept : start . $end  (0)
-	start : start . startinfo
+	basetypestmt : basetype . idlistwithvar SEMI
+	funcdef : basetype . ID LBRACESS RBRACESS comstmt
+	funcdef : basetype . ID LBRACESS typeidlist RBRACESS comstmt
+	funcdef : basetype . ALGCMUL ID LBRACESS typeidlist RBRACESS comstmt
+	funcdef : basetype . ALGCMUL ID LBRACESS RBRACESS comstmt
 
-	$end  accept
-	INT  shift 1
-	FLOAT  shift 2
-	CHAR  shift 3
-	VOID  shift 4
-	CLASS  shift 5
-	ID  shift 6
+	ALGCMUL  shift 18
+	ID  shift 19
 
-	basetypestmt  goto 7
-	classdef  goto 8
-	funcdef  goto 9
-	funcdefmain  goto 10
-	basetype  goto 11
-	startinfo  goto 20
-	among  goto 14
+	idlistwithvar  goto 20
 
 
 state 14
@@ -326,8 +326,8 @@ state 14
 
 
 state 15
-	funcdefmain : INT MAIN . LBRACESS RBRACESS comstmt
 	funcdefmain : INT MAIN . LBRACESS error comstmt
+	funcdefmain : INT MAIN . LBRACESS RBRACESS comstmt
 
 	LBRACESS  shift 24
 
@@ -339,6 +339,12 @@ state 16
 
 
 state 17
+	start : start startinfo .  (2)
+
+	.  reduce 2
+
+
+state 18
 	idlistwithvar : ALGCMUL . ID
 	funcdef : basetype ALGCMUL . ID LBRACESS typeidlist RBRACESS comstmt
 	funcdef : basetype ALGCMUL . ID LBRACESS RBRACESS comstmt
@@ -346,12 +352,12 @@ state 17
 	ID  shift 26
 
 
-state 18
+state 19
 	idlistwithvar : ID .  (12)
 	idlistwithvar : ID . EQ expr
 	idlistwithvar : ID . LBRACEM NUMBERD RBRACEM
-	funcdef : basetype ID . LBRACESS typeidlist RBRACESS comstmt
 	funcdef : basetype ID . LBRACESS RBRACESS comstmt
+	funcdef : basetype ID . LBRACESS typeidlist RBRACESS comstmt
 
 	LBRACESS  shift 27
 	EQ  shift 28
@@ -359,7 +365,7 @@ state 18
 	.  reduce 12
 
 
-state 19
+state 20
 	idlistwithvar : idlistwithvar . COMMA ID
 	idlistwithvar : idlistwithvar . COMMA ID EQ expr
 	idlistwithvar : idlistwithvar . COMMA ALGCMUL ID
@@ -368,12 +374,6 @@ state 19
 
 	SEMI  shift 30
 	COMMA  shift 31
-
-
-state 20
-	start : start startinfo .  (2)
-
-	.  reduce 2
 
 
 state 21
@@ -404,8 +404,8 @@ state 23
 
 
 state 24
-	funcdefmain : INT MAIN LBRACESS . RBRACESS comstmt
 	funcdefmain : INT MAIN LBRACESS . error comstmt
+	funcdefmain : INT MAIN LBRACESS . RBRACESS comstmt
 
 	error  shift 34
 	RBRACESS  shift 35
@@ -420,9 +420,9 @@ state 25
 	VOID  shift 4
 	ID  shift 6
 
-	basetypestmt  goto 37
-	funcdef  goto 38
-	basetype  goto 11
+	funcdef  goto 37
+	basetypestmt  goto 38
+	basetype  goto 13
 	among  goto 14
 	inclass  goto 39
 
@@ -437,8 +437,8 @@ state 26
 
 
 state 27
-	funcdef : basetype ID LBRACESS . typeidlist RBRACESS comstmt
 	funcdef : basetype ID LBRACESS . RBRACESS comstmt
+	funcdef : basetype ID LBRACESS . typeidlist RBRACESS comstmt
 
 	RBRACESS  shift 41
 	INT  shift 36
@@ -532,15 +532,15 @@ state 36
 
 
 state 37
-	inclass : basetypestmt .  (126)
-
-	.  reduce 126
-
-
-state 38
 	inclass : funcdef .  (127)
 
 	.  reduce 127
+
+
+state 38
+	inclass : basetypestmt .  (126)
+
+	.  reduce 126
 
 
 state 39
@@ -555,9 +555,9 @@ state 39
 	RBRACE  shift 69
 	ID  shift 6
 
-	basetypestmt  goto 70
-	funcdef  goto 71
-	basetype  goto 11
+	funcdef  goto 70
+	basetypestmt  goto 71
+	basetype  goto 13
 	among  goto 14
 
 
@@ -593,17 +593,17 @@ state 42
 
 
 state 43
-	typeidlist : typeidlist . COMMA typep ID
-	funcdef : basetype ID LBRACESS typeidlist . RBRACESS comstmt
 	typeidlist : typeidlist . COMMA typep ID LBRACEM NUMBERD RBRACEM
+	funcdef : basetype ID LBRACESS typeidlist . RBRACESS comstmt
+	typeidlist : typeidlist . COMMA typep ID
 
 	RBRACESS  shift 76
 	COMMA  shift 77
 
 
 state 44
-	typeidlist : typep . ID LBRACEM NUMBERD RBRACEM
 	typeidlist : typep . ID
+	typeidlist : typep . ID LBRACEM NUMBERD RBRACEM
 
 	ID  shift 78
 
@@ -818,24 +818,24 @@ state 59
 
 state 60
 	idlistwithvar : ID EQ expr .  (14)
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
@@ -861,15 +861,15 @@ state 60
 
 
 state 61
+	valueexpr : valueexpr . CLASSMC valueexpr
 	valueexpr : valueexpr . LBRACEM expr RBRACEM
 	expr : valueexpr .  (24)
-	valueexpr : valueexpr . CLASSMC valueexpr
-	valueexpr : valueexpr . POINT valueexpr
-	calexpr : valueexpr . ALGCTMINUS
 	calexpr : valueexpr . CLASSMC ID LBRACESS exprlist RBRACESS
 	calexpr : valueexpr . ALGCTADD
-	calexpr : valueexpr . POINT ID LBRACESS exprlist RBRACESS
+	valueexpr : valueexpr . POINT valueexpr
+	calexpr : valueexpr . ALGCTMINUS
 	calexpr : valueexpr . CLASSMC ID LBRACESS RBRACESS
+	calexpr : valueexpr . POINT ID LBRACESS exprlist RBRACESS
 	calexpr : valueexpr . POINT ID LBRACESS RBRACESS
 
 	ALGCTADD  shift 112
@@ -937,15 +937,15 @@ state 69
 
 
 state 70
-	inclass : inclass basetypestmt .  (124)
-
-	.  reduce 124
-
-
-state 71
 	inclass : inclass funcdef .  (125)
 
 	.  reduce 125
+
+
+state 71
+	inclass : inclass basetypestmt .  (124)
+
+	.  reduce 124
 
 
 state 72
@@ -957,9 +957,9 @@ state 72
 
 
 state 73
+	typeidlist : typeidlist . COMMA typep ID LBRACEM NUMBERD RBRACEM
 	typeidlist : typeidlist . COMMA typep ID
 	funcdef : basetype ALGCMUL ID LBRACESS typeidlist . RBRACESS comstmt
-	typeidlist : typeidlist . COMMA typep ID LBRACEM NUMBERD RBRACEM
 
 	RBRACESS  shift 124
 	COMMA  shift 77
@@ -986,8 +986,8 @@ state 76
 
 
 state 77
-	typeidlist : typeidlist COMMA . typep ID
 	typeidlist : typeidlist COMMA . typep ID LBRACEM NUMBERD RBRACEM
+	typeidlist : typeidlist COMMA . typep ID
 
 	INT  shift 36
 	FLOAT  shift 2
@@ -999,33 +999,33 @@ state 77
 
 
 state 78
-	typeidlist : typep ID . LBRACEM NUMBERD RBRACEM
 	typeidlist : typep ID .  (116)
+	typeidlist : typep ID . LBRACEM NUMBERD RBRACEM
 
 	LBRACEM  shift 127
 	.  reduce 116
 
 
 state 79
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
+	calexpr : ALGCMINUS expr .  (41)
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
-	calexpr : ALGCMINUS expr .  (41)
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	.  reduce 41
@@ -1050,9 +1050,9 @@ state 81
 
 
 state 82
-	valueexpr : valueexpr . LBRACEM expr RBRACEM
 	valueexpr : ALGCMUL valueexpr .  (29)
 	valueexpr : valueexpr . CLASSMC valueexpr
+	valueexpr : valueexpr . LBRACEM expr RBRACEM
 	valueexpr : valueexpr . POINT valueexpr
 
 	LBRACEM  shift 114
@@ -1062,8 +1062,8 @@ state 82
 
 
 state 83
-	valueexpr : valueexpr . LBRACEM expr RBRACEM
 	valueexpr : valueexpr . CLASSMC valueexpr
+	valueexpr : valueexpr . LBRACEM expr RBRACEM
 	valueexpr : ALGCTADD valueexpr .  (31)
 	valueexpr : valueexpr . POINT valueexpr
 
@@ -1074,9 +1074,9 @@ state 83
 
 
 state 84
+	valueexpr : valueexpr . CLASSMC valueexpr
 	valueexpr : valueexpr . LBRACEM expr RBRACEM
 	valueexpr : ALGCTMINUS valueexpr .  (32)
-	valueexpr : valueexpr . CLASSMC valueexpr
 	valueexpr : valueexpr . POINT valueexpr
 
 	LBRACEM  shift 114
@@ -1086,24 +1086,24 @@ state 84
 
 
 state 85
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
@@ -1128,16 +1128,16 @@ state 85
 
 
 state 86
+	valueexpr : LBRACESS valueexpr . RBRACESS
+	valueexpr : valueexpr . CLASSMC valueexpr
 	valueexpr : valueexpr . LBRACEM expr RBRACEM
 	expr : valueexpr .  (24)
-	valueexpr : valueexpr . CLASSMC valueexpr
-	valueexpr : LBRACESS valueexpr . RBRACESS
-	valueexpr : valueexpr . POINT valueexpr
-	calexpr : valueexpr . ALGCTMINUS
 	calexpr : valueexpr . CLASSMC ID LBRACESS exprlist RBRACESS
 	calexpr : valueexpr . ALGCTADD
-	calexpr : valueexpr . POINT ID LBRACESS exprlist RBRACESS
+	valueexpr : valueexpr . POINT valueexpr
+	calexpr : valueexpr . ALGCTMINUS
 	calexpr : valueexpr . CLASSMC ID LBRACESS RBRACESS
+	calexpr : valueexpr . POINT ID LBRACESS exprlist RBRACESS
 	calexpr : valueexpr . POINT ID LBRACESS RBRACESS
 
 	ALGCTADD  shift 112
@@ -1158,75 +1158,75 @@ state 87
 
 
 state 88
-	calexpr : LGCCN expr .  (49)
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : LGCCN expr .  (49)
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	.  reduce 49
 
 
 state 89
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
-	calexpr : expr . EQ expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : BTCAND expr .  (71)
+	calexpr : expr . EQ expr
 
 	.  reduce 71
 
 
 state 90
-	calexpr : BTCN expr .  (50)
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : BTCN expr .  (50)
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	.  reduce 50
@@ -1260,9 +1260,9 @@ state 91
 
 
 state 92
-	valueexpr : valueexpr . LBRACEM expr RBRACEM
-	expr : DELETE valueexpr . LBRACEM RBRACEM
 	valueexpr : valueexpr . CLASSMC valueexpr
+	expr : DELETE valueexpr . LBRACEM RBRACEM
+	valueexpr : valueexpr . LBRACEM expr RBRACEM
 	valueexpr : valueexpr . POINT valueexpr
 
 	LBRACEM  shift 136
@@ -1865,19 +1865,19 @@ state 121
 	ID  shift 172
 	DELETE  shift 59
 
-	basetypestmt  goto 173
-	basetype  goto 174
-	expr  goto 175
-	stmt  goto 176
+	expr  goto 173
+	basetypestmt  goto 174
+	basetype  goto 175
+	returnstmt  goto 176
+	stmt  goto 177
 	among  goto 14
-	cinstmt  goto 177
+	valueexpr  goto 61
 	ifstmt  goto 178
 	whilestmt  goto 179
-	coutstmt  goto 180
-	valueexpr  goto 61
-	returnstmt  goto 181
-	forstmt  goto 182
 	calexpr  goto 62
+	forstmt  goto 180
+	cinstmt  goto 181
+	coutstmt  goto 182
 	comstmt  goto 183
 	cstmtlist  goto 184
 
@@ -1909,8 +1909,8 @@ state 125
 
 
 state 126
-	typeidlist : typeidlist COMMA typep . ID
 	typeidlist : typeidlist COMMA typep . ID LBRACEM NUMBERD RBRACEM
+	typeidlist : typeidlist COMMA typep . ID
 
 	ID  shift 186
 
@@ -1922,9 +1922,9 @@ state 127
 
 
 state 128
-	valueexpr : valueexpr . LBRACEM expr RBRACEM
-	valueexpr : valueexpr . CLASSMC valueexpr
 	valueexpr : LBRACESS valueexpr . RBRACESS
+	valueexpr : valueexpr . CLASSMC valueexpr
+	valueexpr : valueexpr . LBRACEM expr RBRACEM
 	valueexpr : valueexpr . POINT valueexpr
 
 	RBRACESS  shift 131
@@ -1977,24 +1977,24 @@ state 133
 
 state 134
 	exprlist : expr .  (20)
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
@@ -2028,8 +2028,8 @@ state 135
 
 
 state 136
-	valueexpr : valueexpr LBRACEM . expr RBRACEM
 	expr : DELETE valueexpr LBRACEM . RBRACEM
+	valueexpr : valueexpr LBRACEM . expr RBRACEM
 
 	ALGCMINUS  shift 45
 	ALGCMUL  shift 46
@@ -2054,25 +2054,25 @@ state 136
 
 
 state 137
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr ALGCADD expr .  (35)
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	ALGCMUL  shift 95
@@ -2082,25 +2082,25 @@ state 137
 
 
 state 138
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr ALGCMINUS expr .  (36)
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	ALGCMUL  shift 95
@@ -2110,99 +2110,99 @@ state 138
 
 
 state 139
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
-	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
-	calexpr : expr . BTCLEFT expr
-	calexpr : expr . LGCCEQ expr
-	calexpr : expr . LGCCNEQ expr
 	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
-	calexpr : expr . ALGCADD expr
+	calexpr : expr . ALGCMINUS expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
 	calexpr : expr ALGCMUL expr .  (37)
 	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
+	calexpr : expr . LGCCEQ expr
+	calexpr : expr . LGCCNEQ expr
+	calexpr : expr . BTCAND expr
+	calexpr : expr . ALGCADD expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	.  reduce 37
 
 
 state 140
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
-	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
-	calexpr : expr . BTCLEFT expr
-	calexpr : expr . LGCCEQ expr
-	calexpr : expr . LGCCNEQ expr
 	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
-	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
+	calexpr : expr . ALGCMINUS expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
 	calexpr : expr ALGCDIV expr .  (38)
 	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
+	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
+	calexpr : expr . LGCCEQ expr
+	calexpr : expr . LGCCNEQ expr
+	calexpr : expr . BTCAND expr
+	calexpr : expr . ALGCADD expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	.  reduce 38
 
 
 state 141
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
-	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
-	calexpr : expr . BTCLEFT expr
-	calexpr : expr . LGCCEQ expr
-	calexpr : expr . LGCCNEQ expr
 	calexpr : expr ALGCMOD expr .  (39)
 	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
-	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
+	calexpr : expr . ALGCMINUS expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
 	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
+	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
+	calexpr : expr . LGCCEQ expr
+	calexpr : expr . LGCCNEQ expr
+	calexpr : expr . BTCAND expr
+	calexpr : expr . ALGCADD expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	.  reduce 39
 
 
 state 142
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr EQ expr .  (70)
 	calexpr : expr . EQ expr
 
@@ -2229,25 +2229,25 @@ state 142
 
 
 state 143
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
+	calexpr : expr . BTCAND expr
+	calexpr : expr . ALGCADD expr
+	calexpr : expr . BTCRIGHT expr
 	calexpr : expr LBRACES expr .  (55)
 	calexpr : expr . LBRACES expr
-	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
@@ -2261,25 +2261,25 @@ state 143
 
 
 state 144
+	calexpr : expr . ALGCMOD expr
+	calexpr : expr . ALGCMINUS expr
+	calexpr : expr . LGCCOR expr
 	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
+	calexpr : expr . LGCCAND expr
 	calexpr : expr RBRACES expr .  (56)
 	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
-	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
@@ -2293,25 +2293,25 @@ state 144
 
 
 state 145
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr LGCCEQ expr .  (57)
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
@@ -2329,25 +2329,25 @@ state 145
 
 
 state 146
+	calexpr : expr . ALGCMOD expr
+	calexpr : expr . ALGCMINUS expr
+	calexpr : expr . LGCCOR expr
 	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
+	calexpr : expr . BTCLEFT expr
 	calexpr : expr LGCCLESSEQ expr .  (54)
 	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
-	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
-	calexpr : expr . BTCLEFT expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
@@ -2361,25 +2361,25 @@ state 146
 
 
 state 147
+	calexpr : expr . ALGCMOD expr
+	calexpr : expr . ALGCMINUS expr
+	calexpr : expr . LGCCOR expr
 	calexpr : expr LGCCMOREEQ expr .  (53)
 	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
 	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
-	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
@@ -2393,25 +2393,25 @@ state 147
 
 
 state 148
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr LGCCNEQ expr .  (58)
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
@@ -2429,25 +2429,25 @@ state 148
 
 
 state 149
+	calexpr : expr . ALGCMOD expr
+	calexpr : expr . ALGCMINUS expr
+	calexpr : expr . LGCCOR expr
 	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
 	calexpr : expr LGCCAND expr .  (62)
 	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
-	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
@@ -2470,25 +2470,25 @@ state 149
 
 
 state 150
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
+	calexpr : expr . ALGCMOD expr
+	calexpr : expr . ALGCMINUS expr
 	calexpr : expr LGCCOR expr .  (63)
 	calexpr : expr . LGCCOR expr
-	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
@@ -2512,25 +2512,25 @@ state 150
 
 
 state 151
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
+	calexpr : expr . BTCAND expr
+	calexpr : expr . ALGCADD expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
 	calexpr : expr BTCYH expr .  (61)
 	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
-	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
 	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
@@ -2551,25 +2551,25 @@ state 151
 
 
 state 152
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr BTCOR expr .  (60)
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr BTCOR expr .  (60)
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
@@ -2591,25 +2591,25 @@ state 152
 
 
 state 153
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr BTCAND expr .  (59)
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr BTCAND expr .  (59)
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
@@ -2629,25 +2629,25 @@ state 153
 
 
 state 154
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr BTCLEFT expr .  (52)
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
@@ -2659,25 +2659,25 @@ state 154
 
 
 state 155
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr BTCRIGHT expr .  (51)
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr BTCRIGHT expr .  (51)
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
@@ -2690,24 +2690,24 @@ state 155
 
 state 156
 	valueexpr : valueexpr LBRACEM expr . RBRACEM
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
@@ -2742,8 +2742,8 @@ state 157
 
 
 state 158
-	valueexpr : valueexpr . LBRACEM expr RBRACEM
 	valueexpr : valueexpr . CLASSMC valueexpr
+	valueexpr : valueexpr . LBRACEM expr RBRACEM
 	valueexpr : valueexpr POINT valueexpr .  (34)
 	valueexpr : valueexpr . POINT valueexpr
 
@@ -2763,9 +2763,9 @@ state 159
 
 
 state 160
-	valueexpr : valueexpr . LBRACEM expr RBRACEM
 	valueexpr : valueexpr CLASSMC valueexpr .  (28)
 	valueexpr : valueexpr . CLASSMC valueexpr
+	valueexpr : valueexpr . LBRACEM expr RBRACEM
 	valueexpr : valueexpr . POINT valueexpr
 
 	LBRACEM  shift 114
@@ -2776,24 +2776,24 @@ state 160
 
 state 161
 	idlistwithvar : idlistwithvar COMMA ID EQ expr .  (13)
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
@@ -2853,9 +2853,9 @@ state 163
 
 state 164
 	ifstmt : IF . LBRACESS expr RBRACESS stmtcomstmt ELSE stmtcomstmt
-	ifstmt : IF . LBRACESS expr RBRACESS stmtcomstmt
-	ifstmt : IF . LBRACESS expr error stmtcomstmt ELSE stmtcomstmt
 	ifstmt : IF . LBRACESS expr error stmtcomstmt
+	ifstmt : IF . LBRACESS expr error stmtcomstmt ELSE stmtcomstmt
+	ifstmt : IF . LBRACESS expr RBRACESS stmtcomstmt
 
 	LBRACESS  shift 196
 
@@ -2871,11 +2871,11 @@ state 166
 	forstmt : FOR . LBRACESS expr SEMI expr SEMI expr RBRACESS stmtcomstmt
 	forstmt : FOR . LBRACESS expr SEMI expr SEMI RBRACESS stmtcomstmt
 	forstmt : FOR . LBRACESS expr SEMI SEMI expr RBRACESS stmtcomstmt
+	forstmt : FOR . LBRACESS SEMI expr SEMI expr RBRACESS stmtcomstmt
 	forstmt : FOR . LBRACESS SEMI expr SEMI RBRACESS stmtcomstmt
 	forstmt : FOR . LBRACESS expr SEMI SEMI RBRACESS stmtcomstmt
-	forstmt : FOR . LBRACESS SEMI expr SEMI expr RBRACESS stmtcomstmt
-	forstmt : FOR . LBRACESS SEMI SEMI expr RBRACESS stmtcomstmt
 	forstmt : FOR . LBRACESS SEMI SEMI RBRACESS stmtcomstmt
+	forstmt : FOR . LBRACESS SEMI SEMI expr RBRACESS stmtcomstmt
 
 	LBRACESS  shift 198
 
@@ -2946,41 +2946,26 @@ state 172
 
 
 state 173
-	stmt : basetypestmt .  (75)
-
-	.  reduce 75
-
-
-state 174
-	basetypestmt : basetype . idlistwithvar SEMI
-
-	ALGCMUL  shift 21
-	ID  shift 22
-
-	idlistwithvar  goto 19
-
-
-state 175
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
-	calexpr : expr . EQ expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	stmt : expr . SEMI
+	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
 	ALGCMINUS  shift 94
@@ -3004,16 +2989,31 @@ state 175
 	BTCRIGHT  shift 111
 
 
-state 176
-	cstmtlist : stmt .  (86)
+state 174
+	stmt : basetypestmt .  (75)
 
-	.  reduce 86
+	.  reduce 75
+
+
+state 175
+	basetypestmt : basetype . idlistwithvar SEMI
+
+	ALGCMUL  shift 21
+	ID  shift 22
+
+	idlistwithvar  goto 20
+
+
+state 176
+	stmt : returnstmt .  (81)
+
+	.  reduce 81
 
 
 state 177
-	stmt : cinstmt .  (79)
+	cstmtlist : stmt .  (86)
 
-	.  reduce 79
+	.  reduce 86
 
 
 state 178
@@ -3029,21 +3029,21 @@ state 179
 
 
 state 180
-	stmt : coutstmt .  (80)
-
-	.  reduce 80
-
-
-state 181
-	stmt : returnstmt .  (81)
-
-	.  reduce 81
-
-
-state 182
 	stmt : forstmt .  (78)
 
 	.  reduce 78
+
+
+state 181
+	stmt : cinstmt .  (79)
+
+	.  reduce 79
+
+
+state 182
+	stmt : coutstmt .  (80)
+
+	.  reduce 80
 
 
 state 183
@@ -3053,8 +3053,8 @@ state 183
 
 
 state 184
-	comstmt : LBRACE midum cstmtlist . RBRACE
 	cstmtlist : cstmtlist . stmt
+	comstmt : LBRACE midum cstmtlist . RBRACE
 	cstmtlist : cstmtlist . comstmt
 
 	ALGCMINUS  shift 45
@@ -3086,19 +3086,19 @@ state 184
 	ID  shift 172
 	DELETE  shift 59
 
-	basetypestmt  goto 173
-	basetype  goto 174
-	expr  goto 175
+	expr  goto 173
+	basetypestmt  goto 174
+	basetype  goto 175
+	returnstmt  goto 176
 	stmt  goto 206
 	among  goto 14
-	cinstmt  goto 177
+	valueexpr  goto 61
 	ifstmt  goto 178
 	whilestmt  goto 179
-	coutstmt  goto 180
-	valueexpr  goto 61
-	returnstmt  goto 181
-	forstmt  goto 182
 	calexpr  goto 62
+	forstmt  goto 180
+	cinstmt  goto 181
+	coutstmt  goto 182
 	comstmt  goto 207
 
 
@@ -3109,8 +3109,8 @@ state 185
 
 
 state 186
-	typeidlist : typeidlist COMMA typep ID .  (114)
 	typeidlist : typeidlist COMMA typep ID . LBRACEM NUMBERD RBRACEM
+	typeidlist : typeidlist COMMA typep ID .  (114)
 
 	LBRACEM  shift 208
 	.  reduce 114
@@ -3232,9 +3232,9 @@ state 195
 
 state 196
 	ifstmt : IF LBRACESS . expr RBRACESS stmtcomstmt ELSE stmtcomstmt
-	ifstmt : IF LBRACESS . expr RBRACESS stmtcomstmt
-	ifstmt : IF LBRACESS . expr error stmtcomstmt ELSE stmtcomstmt
 	ifstmt : IF LBRACESS . expr error stmtcomstmt
+	ifstmt : IF LBRACESS . expr error stmtcomstmt ELSE stmtcomstmt
+	ifstmt : IF LBRACESS . expr RBRACESS stmtcomstmt
 
 	ALGCMINUS  shift 45
 	ALGCMUL  shift 46
@@ -3286,11 +3286,11 @@ state 198
 	forstmt : FOR LBRACESS . expr SEMI expr SEMI expr RBRACESS stmtcomstmt
 	forstmt : FOR LBRACESS . expr SEMI expr SEMI RBRACESS stmtcomstmt
 	forstmt : FOR LBRACESS . expr SEMI SEMI expr RBRACESS stmtcomstmt
+	forstmt : FOR LBRACESS . SEMI expr SEMI expr RBRACESS stmtcomstmt
 	forstmt : FOR LBRACESS . SEMI expr SEMI RBRACESS stmtcomstmt
 	forstmt : FOR LBRACESS . expr SEMI SEMI RBRACESS stmtcomstmt
-	forstmt : FOR LBRACESS . SEMI expr SEMI expr RBRACESS stmtcomstmt
-	forstmt : FOR LBRACESS . SEMI SEMI expr RBRACESS stmtcomstmt
 	forstmt : FOR LBRACESS . SEMI SEMI RBRACESS stmtcomstmt
+	forstmt : FOR LBRACESS . SEMI SEMI expr RBRACESS stmtcomstmt
 
 	ALGCMINUS  shift 45
 	ALGCMUL  shift 46
@@ -3339,8 +3339,8 @@ state 199
 
 
 state 200
-	coutlist : coutlist . BTCLEFT expr
 	coutstmt : COUT coutlist . SEMI
+	coutlist : coutlist . BTCLEFT expr
 
 	SEMI  shift 221
 	BTCLEFT  shift 222
@@ -3367,26 +3367,26 @@ state 202
 
 
 state 203
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
-	calexpr : expr . EQ expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	returnstmt : RETURN expr . SEMI
+	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
 	ALGCMINUS  shift 94
@@ -3448,24 +3448,24 @@ state 209
 
 state 210
 	exprlist : exprlist COMMA expr .  (19)
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
@@ -3525,29 +3525,29 @@ state 215
 
 
 state 216
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	ifstmt : IF LBRACESS expr . RBRACESS stmtcomstmt ELSE stmtcomstmt
+	ifstmt : IF LBRACESS expr . error stmtcomstmt
+	ifstmt : IF LBRACESS expr . error stmtcomstmt ELSE stmtcomstmt
 	calexpr : expr . EQ expr
 	ifstmt : IF LBRACESS expr . RBRACESS stmtcomstmt
-	ifstmt : IF LBRACESS expr . error stmtcomstmt ELSE stmtcomstmt
-	ifstmt : IF LBRACESS expr . error stmtcomstmt
 
 	error  shift 230
 	ALGCADD  shift 93
@@ -3573,27 +3573,27 @@ state 216
 
 
 state 217
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	whilestmt : WHILE LBRACESS expr . RBRACESS stmtcomstmt
-	calexpr : expr . EQ expr
 	whilestmt : WHILE LBRACESS expr . error stmtcomstmt
+	calexpr : expr . EQ expr
 
 	error  shift 232
 	ALGCADD  shift 93
@@ -3619,10 +3619,10 @@ state 217
 
 
 state 218
-	forstmt : FOR LBRACESS SEMI . expr SEMI RBRACESS stmtcomstmt
 	forstmt : FOR LBRACESS SEMI . expr SEMI expr RBRACESS stmtcomstmt
-	forstmt : FOR LBRACESS SEMI . SEMI expr RBRACESS stmtcomstmt
+	forstmt : FOR LBRACESS SEMI . expr SEMI RBRACESS stmtcomstmt
 	forstmt : FOR LBRACESS SEMI . SEMI RBRACESS stmtcomstmt
+	forstmt : FOR LBRACESS SEMI . SEMI expr RBRACESS stmtcomstmt
 
 	ALGCMINUS  shift 45
 	ALGCMUL  shift 46
@@ -3647,28 +3647,28 @@ state 218
 
 
 state 219
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
-	calexpr : expr . EQ expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	forstmt : FOR LBRACESS expr . SEMI expr SEMI expr RBRACESS stmtcomstmt
 	forstmt : FOR LBRACESS expr . SEMI expr SEMI RBRACESS stmtcomstmt
 	forstmt : FOR LBRACESS expr . SEMI SEMI expr RBRACESS stmtcomstmt
+	calexpr : expr . EQ expr
 	forstmt : FOR LBRACESS expr . SEMI SEMI RBRACESS stmtcomstmt
 
 	ALGCADD  shift 93
@@ -3694,24 +3694,24 @@ state 219
 
 
 state 220
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 	coutlist : BTCLEFT expr .  (107)
 
@@ -3767,8 +3767,8 @@ state 222
 
 
 state 223
-	valueexpr : valueexpr . LBRACEM expr RBRACEM
 	valueexpr : valueexpr . CLASSMC valueexpr
+	valueexpr : valueexpr . LBRACEM expr RBRACEM
 	valueexpr : valueexpr . POINT valueexpr
 	cinlist : BTCRIGHT valueexpr .  (110)
 
@@ -3821,8 +3821,8 @@ state 229
 
 
 state 230
-	ifstmt : IF LBRACESS expr error . stmtcomstmt ELSE stmtcomstmt
 	ifstmt : IF LBRACESS expr error . stmtcomstmt
+	ifstmt : IF LBRACESS expr error . stmtcomstmt ELSE stmtcomstmt
 
 	ALGCMINUS  shift 45
 	ALGCMUL  shift 46
@@ -3852,21 +3852,21 @@ state 230
 	ID  shift 172
 	DELETE  shift 59
 
-	basetypestmt  goto 173
-	basetype  goto 174
-	expr  goto 175
+	expr  goto 173
+	basetypestmt  goto 174
+	basetype  goto 175
+	returnstmt  goto 176
 	stmt  goto 240
 	among  goto 14
-	cinstmt  goto 177
+	valueexpr  goto 61
 	ifstmt  goto 178
 	whilestmt  goto 179
-	coutstmt  goto 180
-	valueexpr  goto 61
-	returnstmt  goto 181
-	forstmt  goto 182
 	calexpr  goto 62
-	comstmt  goto 241
-	stmtcomstmt  goto 242
+	forstmt  goto 180
+	cinstmt  goto 181
+	coutstmt  goto 182
+	stmtcomstmt  goto 241
+	comstmt  goto 242
 
 
 state 231
@@ -3901,21 +3901,21 @@ state 231
 	ID  shift 172
 	DELETE  shift 59
 
-	basetypestmt  goto 173
-	basetype  goto 174
-	expr  goto 175
+	expr  goto 173
+	basetypestmt  goto 174
+	basetype  goto 175
+	returnstmt  goto 176
 	stmt  goto 240
 	among  goto 14
-	cinstmt  goto 177
+	valueexpr  goto 61
 	ifstmt  goto 178
 	whilestmt  goto 179
-	coutstmt  goto 180
-	valueexpr  goto 61
-	returnstmt  goto 181
-	forstmt  goto 182
 	calexpr  goto 62
-	comstmt  goto 241
+	forstmt  goto 180
+	cinstmt  goto 181
+	coutstmt  goto 182
 	stmtcomstmt  goto 243
+	comstmt  goto 242
 
 
 state 232
@@ -3949,21 +3949,21 @@ state 232
 	ID  shift 172
 	DELETE  shift 59
 
-	basetypestmt  goto 173
-	basetype  goto 174
-	expr  goto 175
+	expr  goto 173
+	basetypestmt  goto 174
+	basetype  goto 175
+	returnstmt  goto 176
 	stmt  goto 240
 	among  goto 14
-	cinstmt  goto 177
+	valueexpr  goto 61
 	ifstmt  goto 178
 	whilestmt  goto 179
-	coutstmt  goto 180
-	valueexpr  goto 61
-	returnstmt  goto 181
-	forstmt  goto 182
 	calexpr  goto 62
-	comstmt  goto 241
+	forstmt  goto 180
+	cinstmt  goto 181
+	coutstmt  goto 182
 	stmtcomstmt  goto 244
+	comstmt  goto 242
 
 
 state 233
@@ -3997,26 +3997,26 @@ state 233
 	ID  shift 172
 	DELETE  shift 59
 
-	basetypestmt  goto 173
-	basetype  goto 174
-	expr  goto 175
+	expr  goto 173
+	basetypestmt  goto 174
+	basetype  goto 175
+	returnstmt  goto 176
 	stmt  goto 240
 	among  goto 14
-	cinstmt  goto 177
+	valueexpr  goto 61
 	ifstmt  goto 178
 	whilestmt  goto 179
-	coutstmt  goto 180
-	valueexpr  goto 61
-	returnstmt  goto 181
-	forstmt  goto 182
 	calexpr  goto 62
-	comstmt  goto 241
+	forstmt  goto 180
+	cinstmt  goto 181
+	coutstmt  goto 182
 	stmtcomstmt  goto 245
+	comstmt  goto 242
 
 
 state 234
-	forstmt : FOR LBRACESS SEMI SEMI . expr RBRACESS stmtcomstmt
 	forstmt : FOR LBRACESS SEMI SEMI . RBRACESS stmtcomstmt
+	forstmt : FOR LBRACESS SEMI SEMI . expr RBRACESS stmtcomstmt
 
 	ALGCMINUS  shift 45
 	ALGCMUL  shift 46
@@ -4041,27 +4041,27 @@ state 234
 
 
 state 235
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
-	forstmt : FOR LBRACESS SEMI expr . SEMI RBRACESS stmtcomstmt
 	forstmt : FOR LBRACESS SEMI expr . SEMI expr RBRACESS stmtcomstmt
+	forstmt : FOR LBRACESS SEMI expr . SEMI RBRACESS stmtcomstmt
 
 	ALGCADD  shift 93
 	ALGCMINUS  shift 94
@@ -4114,24 +4114,24 @@ state 236
 
 
 state 237
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 	coutlist : coutlist BTCLEFT expr .  (106)
 
@@ -4157,8 +4157,8 @@ state 237
 
 
 state 238
-	valueexpr : valueexpr . LBRACEM expr RBRACEM
 	valueexpr : valueexpr . CLASSMC valueexpr
+	valueexpr : valueexpr . LBRACEM expr RBRACEM
 	valueexpr : valueexpr . POINT valueexpr
 	cinlist : cinlist BTCRIGHT valueexpr .  (109)
 
@@ -4180,19 +4180,19 @@ state 240
 	.  reduce 90
 
 
+241: shift-reduce conflict (shift 251, reduce 95) on ELSE
 state 241
-	stmtcomstmt : comstmt .  (91)
-
-	.  reduce 91
-
-
-242: shift-reduce conflict (shift 251, reduce 95) on ELSE
-state 242
-	ifstmt : IF LBRACESS expr error stmtcomstmt . ELSE stmtcomstmt
 	ifstmt : IF LBRACESS expr error stmtcomstmt .  (95)
+	ifstmt : IF LBRACESS expr error stmtcomstmt . ELSE stmtcomstmt
 
 	ELSE  shift 251
 	.  reduce 95
+
+
+state 242
+	stmtcomstmt : comstmt .  (91)
+
+	.  reduce 91
 
 
 243: shift-reduce conflict (shift 252, reduce 93) on ELSE
@@ -4247,42 +4247,42 @@ state 246
 	ID  shift 172
 	DELETE  shift 59
 
-	basetypestmt  goto 173
-	basetype  goto 174
-	expr  goto 175
+	expr  goto 173
+	basetypestmt  goto 174
+	basetype  goto 175
+	returnstmt  goto 176
 	stmt  goto 240
 	among  goto 14
-	cinstmt  goto 177
+	valueexpr  goto 61
 	ifstmt  goto 178
 	whilestmt  goto 179
-	coutstmt  goto 180
-	valueexpr  goto 61
-	returnstmt  goto 181
-	forstmt  goto 182
 	calexpr  goto 62
-	comstmt  goto 241
+	forstmt  goto 180
+	cinstmt  goto 181
+	coutstmt  goto 182
 	stmtcomstmt  goto 253
+	comstmt  goto 242
 
 
 state 247
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 	forstmt : FOR LBRACESS SEMI SEMI expr . RBRACESS stmtcomstmt
 
@@ -4309,8 +4309,8 @@ state 247
 
 
 state 248
-	forstmt : FOR LBRACESS SEMI expr SEMI . RBRACESS stmtcomstmt
 	forstmt : FOR LBRACESS SEMI expr SEMI . expr RBRACESS stmtcomstmt
+	forstmt : FOR LBRACESS SEMI expr SEMI . RBRACESS stmtcomstmt
 
 	ALGCMINUS  shift 45
 	ALGCMUL  shift 46
@@ -4361,27 +4361,27 @@ state 249
 
 
 state 250
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
-	calexpr : expr . EQ expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	forstmt : FOR LBRACESS expr SEMI expr . SEMI expr RBRACESS stmtcomstmt
 	forstmt : FOR LBRACESS expr SEMI expr . SEMI RBRACESS stmtcomstmt
+	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
 	ALGCMINUS  shift 94
@@ -4436,21 +4436,21 @@ state 251
 	ID  shift 172
 	DELETE  shift 59
 
-	basetypestmt  goto 173
-	basetype  goto 174
-	expr  goto 175
+	expr  goto 173
+	basetypestmt  goto 174
+	basetype  goto 175
+	returnstmt  goto 176
 	stmt  goto 240
 	among  goto 14
-	cinstmt  goto 177
+	valueexpr  goto 61
 	ifstmt  goto 178
 	whilestmt  goto 179
-	coutstmt  goto 180
-	valueexpr  goto 61
-	returnstmt  goto 181
-	forstmt  goto 182
 	calexpr  goto 62
-	comstmt  goto 241
+	forstmt  goto 180
+	cinstmt  goto 181
+	coutstmt  goto 182
 	stmtcomstmt  goto 260
+	comstmt  goto 242
 
 
 state 252
@@ -4484,21 +4484,21 @@ state 252
 	ID  shift 172
 	DELETE  shift 59
 
-	basetypestmt  goto 173
-	basetype  goto 174
-	expr  goto 175
+	expr  goto 173
+	basetypestmt  goto 174
+	basetype  goto 175
+	returnstmt  goto 176
 	stmt  goto 240
 	among  goto 14
-	cinstmt  goto 177
+	valueexpr  goto 61
 	ifstmt  goto 178
 	whilestmt  goto 179
-	coutstmt  goto 180
-	valueexpr  goto 61
-	returnstmt  goto 181
-	forstmt  goto 182
 	calexpr  goto 62
-	comstmt  goto 241
+	forstmt  goto 180
+	cinstmt  goto 181
+	coutstmt  goto 182
 	stmtcomstmt  goto 261
+	comstmt  goto 242
 
 
 state 253
@@ -4538,21 +4538,21 @@ state 254
 	ID  shift 172
 	DELETE  shift 59
 
-	basetypestmt  goto 173
-	basetype  goto 174
-	expr  goto 175
+	expr  goto 173
+	basetypestmt  goto 174
+	basetype  goto 175
+	returnstmt  goto 176
 	stmt  goto 240
 	among  goto 14
-	cinstmt  goto 177
+	valueexpr  goto 61
 	ifstmt  goto 178
 	whilestmt  goto 179
-	coutstmt  goto 180
-	valueexpr  goto 61
-	returnstmt  goto 181
-	forstmt  goto 182
 	calexpr  goto 62
-	comstmt  goto 241
+	forstmt  goto 180
+	cinstmt  goto 181
+	coutstmt  goto 182
 	stmtcomstmt  goto 262
+	comstmt  goto 242
 
 
 state 255
@@ -4586,42 +4586,42 @@ state 255
 	ID  shift 172
 	DELETE  shift 59
 
-	basetypestmt  goto 173
-	basetype  goto 174
-	expr  goto 175
+	expr  goto 173
+	basetypestmt  goto 174
+	basetype  goto 175
+	returnstmt  goto 176
 	stmt  goto 240
 	among  goto 14
-	cinstmt  goto 177
+	valueexpr  goto 61
 	ifstmt  goto 178
 	whilestmt  goto 179
-	coutstmt  goto 180
-	valueexpr  goto 61
-	returnstmt  goto 181
-	forstmt  goto 182
 	calexpr  goto 62
-	comstmt  goto 241
+	forstmt  goto 180
+	cinstmt  goto 181
+	coutstmt  goto 182
 	stmtcomstmt  goto 263
+	comstmt  goto 242
 
 
 state 256
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	calexpr : expr . EQ expr
 	forstmt : FOR LBRACESS SEMI expr SEMI expr . RBRACESS stmtcomstmt
 
@@ -4678,44 +4678,44 @@ state 257
 	ID  shift 172
 	DELETE  shift 59
 
-	basetypestmt  goto 173
-	basetype  goto 174
-	expr  goto 175
+	expr  goto 173
+	basetypestmt  goto 174
+	basetype  goto 175
+	returnstmt  goto 176
 	stmt  goto 240
 	among  goto 14
-	cinstmt  goto 177
+	valueexpr  goto 61
 	ifstmt  goto 178
 	whilestmt  goto 179
-	coutstmt  goto 180
-	valueexpr  goto 61
-	returnstmt  goto 181
-	forstmt  goto 182
 	calexpr  goto 62
-	comstmt  goto 241
+	forstmt  goto 180
+	cinstmt  goto 181
+	coutstmt  goto 182
 	stmtcomstmt  goto 265
+	comstmt  goto 242
 
 
 state 258
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
-	calexpr : expr . EQ expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	forstmt : FOR LBRACESS expr SEMI SEMI expr . RBRACESS stmtcomstmt
+	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
 	ALGCMINUS  shift 94
@@ -4820,21 +4820,21 @@ state 264
 	ID  shift 172
 	DELETE  shift 59
 
-	basetypestmt  goto 173
-	basetype  goto 174
-	expr  goto 175
+	expr  goto 173
+	basetypestmt  goto 174
+	basetype  goto 175
+	returnstmt  goto 176
 	stmt  goto 240
 	among  goto 14
-	cinstmt  goto 177
+	valueexpr  goto 61
 	ifstmt  goto 178
 	whilestmt  goto 179
-	coutstmt  goto 180
-	valueexpr  goto 61
-	returnstmt  goto 181
-	forstmt  goto 182
 	calexpr  goto 62
-	comstmt  goto 241
+	forstmt  goto 180
+	cinstmt  goto 181
+	coutstmt  goto 182
 	stmtcomstmt  goto 269
+	comstmt  goto 242
 
 
 state 265
@@ -4874,21 +4874,21 @@ state 266
 	ID  shift 172
 	DELETE  shift 59
 
-	basetypestmt  goto 173
-	basetype  goto 174
-	expr  goto 175
+	expr  goto 173
+	basetypestmt  goto 174
+	basetype  goto 175
+	returnstmt  goto 176
 	stmt  goto 240
 	among  goto 14
-	cinstmt  goto 177
+	valueexpr  goto 61
 	ifstmt  goto 178
 	whilestmt  goto 179
-	coutstmt  goto 180
-	valueexpr  goto 61
-	returnstmt  goto 181
-	forstmt  goto 182
 	calexpr  goto 62
-	comstmt  goto 241
+	forstmt  goto 180
+	cinstmt  goto 181
+	coutstmt  goto 182
 	stmtcomstmt  goto 270
+	comstmt  goto 242
 
 
 state 267
@@ -4922,44 +4922,44 @@ state 267
 	ID  shift 172
 	DELETE  shift 59
 
-	basetypestmt  goto 173
-	basetype  goto 174
-	expr  goto 175
+	expr  goto 173
+	basetypestmt  goto 174
+	basetype  goto 175
+	returnstmt  goto 176
 	stmt  goto 240
 	among  goto 14
-	cinstmt  goto 177
+	valueexpr  goto 61
 	ifstmt  goto 178
 	whilestmt  goto 179
-	coutstmt  goto 180
-	valueexpr  goto 61
-	returnstmt  goto 181
-	forstmt  goto 182
 	calexpr  goto 62
-	comstmt  goto 241
+	forstmt  goto 180
+	cinstmt  goto 181
+	coutstmt  goto 182
 	stmtcomstmt  goto 271
+	comstmt  goto 242
 
 
 state 268
-	calexpr : expr . LGCCMOREEQ expr
-	calexpr : expr . LGCCLESSEQ expr
-	calexpr : expr . RBRACES expr
-	calexpr : expr . BTCAND expr
-	calexpr : expr . BTCOR expr
-	calexpr : expr . LGCCAND expr
-	calexpr : expr . LGCCOR expr
+	calexpr : expr . ALGCMOD expr
 	calexpr : expr . ALGCMINUS expr
-	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LGCCOR expr
+	calexpr : expr . LGCCMOREEQ expr
+	calexpr : expr . LGCCAND expr
+	calexpr : expr . RBRACES expr
+	calexpr : expr . ALGCDIV expr
+	calexpr : expr . ALGCMUL expr
 	calexpr : expr . BTCLEFT expr
+	calexpr : expr . LGCCLESSEQ expr
 	calexpr : expr . LGCCEQ expr
 	calexpr : expr . LGCCNEQ expr
-	calexpr : expr . ALGCMOD expr
-	calexpr : expr . BTCYH expr
-	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCAND expr
 	calexpr : expr . ALGCADD expr
-	calexpr : expr . ALGCMUL expr
-	calexpr : expr . ALGCDIV expr
-	calexpr : expr . EQ expr
+	calexpr : expr . BTCRIGHT expr
+	calexpr : expr . LBRACES expr
+	calexpr : expr . BTCOR expr
+	calexpr : expr . BTCYH expr
 	forstmt : FOR LBRACESS expr SEMI expr SEMI expr . RBRACESS stmtcomstmt
+	calexpr : expr . EQ expr
 
 	ALGCADD  shift 93
 	ALGCMINUS  shift 94
@@ -5032,21 +5032,21 @@ state 272
 	ID  shift 172
 	DELETE  shift 59
 
-	basetypestmt  goto 173
-	basetype  goto 174
-	expr  goto 175
+	expr  goto 173
+	basetypestmt  goto 174
+	basetype  goto 175
+	returnstmt  goto 176
 	stmt  goto 240
 	among  goto 14
-	cinstmt  goto 177
+	valueexpr  goto 61
 	ifstmt  goto 178
 	whilestmt  goto 179
-	coutstmt  goto 180
-	valueexpr  goto 61
-	returnstmt  goto 181
-	forstmt  goto 182
 	calexpr  goto 62
-	comstmt  goto 241
+	forstmt  goto 180
+	cinstmt  goto 181
+	coutstmt  goto 182
 	stmtcomstmt  goto 273
+	comstmt  goto 242
 
 
 state 273
@@ -5060,7 +5060,7 @@ state 273
 ##############################################################################
 
 State 172 contains 1 reduce-reduce conflict(s)
-State 242 contains 1 shift-reduce conflict(s)
+State 241 contains 1 shift-reduce conflict(s)
 State 243 contains 1 shift-reduce conflict(s)
 
 
