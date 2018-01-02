@@ -1,0 +1,5 @@
+INT       int                 
+LBRACEM   [                   
+NUMBERD   9         9         
+RBRACEM   ]                   
+SEMI      ;                   

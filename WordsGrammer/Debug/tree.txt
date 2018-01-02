@@ -1,0 +1,4 @@
+0:type:   1                       int                      children: sibling:                           
+1:expr:   1001                    symbol: p                children: sibling:                           
+2:expr:   ------                  op:*                     children:1 ,  sibling:                       
+3:stmt:   ------                  type define              children:0 , 2 ,  sibling:                   
