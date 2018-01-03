@@ -15,11 +15,14 @@ public:
 	string token;// ID FUNC CLASS
 	ExpType attri;//int char 
 	string classname;
+
+
 	Node*varlist;//用于函数
 	TreeNode* value;//是对应TreeNode的地址,主要用于函数
 	int szsize;
 	//新的符号表中的类型
 	CType*exptype;
+	
 	Node(string classname) {
 		this->classname = classname;
 	}
@@ -149,22 +152,58 @@ class ClassNode{
 public:
 	string name;
 	CType*exptype;
+	//大概是没有用了吧
 	ListNode*idlist;
 	ListNode*funclist;
+
+	CHash*classv;
+	hash_map<string,Node*>*classf;
+
 	ClassNode() { name = ""; idlist = funclist = NULL; }
 	ClassNode(const ClassNode&obj) {
 		name = obj.name;
 		idlist = obj.idlist;//浅拷贝
 		funclist = obj.funclist;
 		exptype = obj.exptype;
+		classv = obj.classv;
+		classf = obj.classf;
 	}
 	ClassNode(string name) {
 		this->name = name;
 		idlist = funclist = NULL;
 	}
+	ClassNode(string name, CHash*h, hash_map<string, Node*>*m) {
+		this->name = name;
+		classv = h;
+		classf = m;
+	}
 	//设置类型
 	void setType(CType*t) {
 		exptype = t;
+	}
+	//在类中寻找某一个类成员
+	CType*findMemv(string name) {
+		/*Node*now = idlist;
+		while (now) {
+			if (now->nodevalue->lexeme == name)return now->nodevalue->exptype;
+			now = now->next;
+		}
+		return NULL;//没有对应的变量*/
+		Node*now = classv->findexist(name);
+		if (now == NULL)return NULL;
+		return now->exptype;
+	}
+	Node*findMemf(string name) {
+	/*	Node*now = funclist;
+		while (now) {
+			if (now->lexeme == name)return now;
+			now = now->varlist;
+		}
+		return NULL;//没有对应的hanshu*/
+		if (classf->find(name) == classf->end())//所指类不存在
+			return NULL;
+		if (classf->find(name) == classf->end())return NULL;//所指函数不存在
+		return (*classf)[name];
 	}
 };
 struct string_less : public binary_function<const string, const string, bool>

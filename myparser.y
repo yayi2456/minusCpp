@@ -20,24 +20,33 @@ Date: 2017年12月2日
 #include"myhashtable.h"
 #include"mytype.h"
 #include"typemiddle.h"
+#include "codegen.h"
+#include"toasm.h"
 
 using namespace std;
 
+bool gtf=false;
+
 extern stack<CHash*> allsymbol;
 extern stack<CHash*>storesymbol;
+hash_map<string,ClassNode*>classmap;
+hash_map<string,Node*>funcmap;
+hash_map<string,Node*>*tofuncmap;
+
+
 //CHash*classname;//为了支持类操作，检查类类型。
 extern int lineno;
 ExpType nowattri;
 BaseType nowcode;
 string nowclass;
 TreeNode*startnode;
-
+TreeNode*mainnode=NULL;
 
 ofstream rout("result.txt");
 ofstream trout("tree.txt");
+ofstream asmf("test.asm");
 
-hash_map<string,ClassNode*>classmap;
-hash_map<string,Node*>funcmap;
+
 
 TreeNode*lastt;
 TreeNode*comlastt;
@@ -288,7 +297,7 @@ start:	startinfo	{$$=$1;startnode=$$;cout<<"start1"<<endl;}
 						$$->child[0]=$1;
 						$$->child[1]=$2;
 						//结合代码
-						$$->midcode=Fcodes::combinecode($1->midcode,$2->midecode);
+						$$->midcode=Fcodes::combinecode($1->midcode,$2->midcode);
 						//---
 						startnode=$$;
 						
@@ -320,6 +329,7 @@ idlistwithvar:	idlistwithvar COMMA ID{
 					//添加类型
 					$3->exptype=new CType(nowcode);
 					if(nowcode==CCLASS)$3->exptype->cname=nowclass;
+					
 					Node*addr=allsymbol.top()->findexist($3->attri.name);
 					if(addr==NULL){
 						Node*n=new Node("ID",$3->attri.name);
@@ -358,10 +368,11 @@ idlistwithvar:	idlistwithvar COMMA ID{
 					}
 	//
 	|	idlistwithvar COMMA ID EQ expr	{
-					//类型检查：这里的类型检查就不拖到语法树建立完成了
+					//类型检查
 					$3->exptype=new CType(nowcode);
 					if(nowcode==CCLASS)$3->exptype->cname=nowclass;
-					//checkEqual($3->exptype,$5->exptype);
+					if(checkEqual($3,$5->exptype)==NULL)gtf=true;
+					
 					Node*addr=allsymbol.top()->findexist($3->attri.name);
 					if(addr==NULL){
 						Node*n=new Node("ID",$3->attri.name);
@@ -379,15 +390,16 @@ idlistwithvar:	idlistwithvar COMMA ID{
 					tmp->child[1]=$5;
 					$$->sibling=$1;	
 					//设置中间代码：（赋值语句）
-					$$->
+					//$$->
 					
 					}
 	|	ID EQ expr	{
 					//类型检查：这里的类型检查就不拖到语法树建立完成了
 					$1->exptype=new CType(nowcode);
 					if(nowcode==CCLASS)$1->exptype->cname=nowclass;
-					//checkEqual($1->exptype,$3->exptype);
-					Node*addr=allsymbol.top()->findexist($1->attri.name);
+					if(!checkEqual($1,$3->exptype))gtf=true;
+					
+					Node*addr=(allsymbol.top())->findexist($1->attri.name);
 					if(addr==NULL){
 						Node*n=new Node("ID",$1->attri.name);
 						n->setType($1->exptype);
@@ -411,6 +423,7 @@ idlistwithvar:	idlistwithvar COMMA ID{
 						//添加类型
 					$4->exptype=CType::pointer(new CType(nowcode));
 					if(nowcode==CCLASS)$4->exptype->cname=nowclass;
+					
 					Node*addr=allsymbol.top()->findexist($4->attri.name);
 					if(addr==NULL){
 						Node*n=new Node("ID",$4->attri.name);
@@ -435,6 +448,8 @@ idlistwithvar:	idlistwithvar COMMA ID{
 					//添加类型
 					$3->exptype=CType::array0($5->attri.val,new CType(nowcode));
 					if(nowcode==CCLASS)$3->exptype->cname=nowclass;
+					$5->exptype=new CType(CINT);
+					
 					Node*addr=allsymbol.top()->findexist($3->attri.name);
 					if(addr==NULL){
 						Node*n=new Node("ID",$3->attri.name);
@@ -479,6 +494,7 @@ idlistwithvar:	idlistwithvar COMMA ID{
 					//添加类型
 					$1->exptype=CType::array0($3->attri.val,new CType(nowcode));
 					if(nowcode==CCLASS)$1->exptype->cname=nowclass;
+					$3->exptype=new CType(CINT);
 					
 					Node*addr=allsymbol.top()->findexist($1->attri.name);
 					if(addr==NULL){
@@ -500,13 +516,16 @@ idlistwithvar:	idlistwithvar COMMA ID{
 	;
 
 //exprlist仅供函数访问。
-exprlist:	exprlist COMMA expr	{lastt->sibling=$3;lastt=$3;$$=$1;}
-	|	expr	{lastt=$1;$$=$1;}
+//函数作为表达式被调用的时候的参数列表
+//这些expr都应该是被检查过的合法的参数
+//但是并不能保证一定可以调用，这还要对函数类型进行检查
+exprlist:	exprlist COMMA expr	{lastt->sibling=$3;lastt=$3;$$=$1;$$->exptype=CType::dicar($1->exptype,$3->exptype);}
+	|	expr	{lastt=$1;$$=$1;$$->exptype=new CType($1->exptype);}
 	;
 
 //基本类型（int char）的声明。在这里填上属性值（其实是在上面的idlistwithvar）
 
-
+//这部分的检查集中于idlistwithvar。
 basetypestmt:	basetype idlistwithvar SEMI	{
 					$$=newStmtsNode(BASEK);
 					$$->child[0]=$1;
@@ -517,7 +536,8 @@ basetypestmt:	basetype idlistwithvar SEMI	{
 				}
 	| among idlistwithvar SEMI{
 		//ID可能是在类表里面，也可能不在
-		//语法分析部分不做判断
+		//要求类在使用前必须定义，函数也是一样
+					
 					$$=newStmtsNode(BASEK);
 					string name=$1->attri.name;
 //					delete $1;
@@ -529,44 +549,150 @@ basetypestmt:	basetype idlistwithvar SEMI	{
 					$$->child[1]=$2;
 				}
 	;
-	//类对象的定义：其类型在语法树够坚持完成、符号表完成之后检查
-among	: ID {nowattri=NOTK;nowcode=CCLASS;nowclass=$1->attri.name;$$=$1;}
+	//类对象的定义：要求此时类已经被声明，加入了classmap
+	//（可能会出现类中类的情况
+	//也许在汇编时无法实现
+	//到时候会加一些约束条件
+among	: ID {
+
+	if(classmap.find($1->attri.name)==classmap.end()){
+		gtf=true;
+		rout<<"error:undefined symbol:"<<$1->attri.name<<" at line:"<<lineno<<endl;
+	}
+	nowattri=NOTK;nowcode=CCLASS;nowclass=$1->attri.name;$$=$1;}
 	;
 //由于shift-reduce conflit，导致非左值不报错
 //没有区分
 //能在expr出现的ID必须是已经在符号表中的了，否则就是未定义的标识符
 expr	:	valueexpr
 	|	calexpr
-	|	DELETE valueexpr LBRACEM RBRACEM 	{$$=makenodeS($2,DELETEK);}
+//	|	DELETE valueexpr LBRACEM RBRACEM 	{$$=makenodeS($2,DELETEK);}
 
 ;
 valueexpr:	ID			{
 			int count=0;
-			if(findfexist(allsymbol,$1->attri.name,count)==NULL){
-				rout<<"error undefined symbol:"<<$1->attri.name<<" at line:"<<lineno<<endl;
+			Node*idnode;
+			if((idnode=findfexist(allsymbol,$1->attri.name,count))==NULL){
+			//	gtf=true;
+			//	rout<<"error undefined symbol:"<<$1->attri.name<<" at line:"<<lineno<<endl;
 				$1->exptype=new CType(CVOID);
+			}else{
+				$1->exptype=new CType(idnode->exptype);
 			}
 			$$=$1;
 		}
 			
-	|	valueexpr CLASSMC valueexpr	{$$=makenodeT($1,$3,CLASSMCK);}
-	|	ALGCMUL valueexpr %prec GETCONTENT	{$$=makenodeS($2,GETCONTENTK);}
+	|	valueexpr CLASSMC valueexpr	{$$=makenodeT($1,$3,CLASSMCK);
+					//类型检查与赋值
+					$$->exptype=checkclass(CLASSMCK,$1->exptype,$3->attri.name,NULL);
+					if(!($$->exptype)){
+						gtf=1;
+						rout<<"error:bad type '->' at line :"<<lineno<<endl;
+						}
+					}
+	|	valueexpr POINT valueexpr	%prec CLASSMC {
+					$$=makenodeT($1,$3,POINTK);
+					$$->exptype=checkclass(POINTK,$1->exptype,$3->attri.name,NULL);
+					if(!($$->exptype)){
+						gtf=1;
+						rout<<"error:bad type '.' at line :"<<lineno<<endl;
+						}
+					
+					}
+	|	ALGCMUL valueexpr %prec GETCONTENT	{
+					$$=makenodeS($2,GETCONTENTK);
+					$$->exptype=checkOp(GETCONTENTK,$2->exptype,NULL);
+					if(!($$->exptype)){
+						gtf=1;
+						rout<<"error:bad type '*' at line :"<<lineno<<endl;
+						}
+					}
 //	|	ALGCMUL LBRACESS valueexpr ALGCADD RBRACESS
-	|	valueexpr LBRACEM expr RBRACEM %prec ARRAYC 	{$$=makenodeT($1,$3,ARRAYCK);}	
-	|	ALGCTADD valueexpr %prec ALGCTADDP		{$$=makenodeS($2,ALGCTADDPK);}
-	|	ALGCTMINUS valueexpr %prec ALGCTMINUSP	{$$=makenodeS($2,ALGCTMINUSPK);}
+	|	valueexpr LBRACEM expr RBRACEM %prec ARRAYC {
+					$$=makenodeT($1,$3,ARRAYCK);
+					$$->exptype=checkOp(ARRAYCK,$1->exptype,$3->exptype);
+					if(!($$->exptype)){
+						gtf=1;
+						rout<<"error:bad type '[]' at line :"<<lineno<<endl;
+						}
+					
+					}	
+	|	ALGCTADD valueexpr %prec ALGCTADDP		{
+					$$=makenodeS($2,ALGCTADDPK);
+					$$->exptype=checkleft(ALGCTADDPK,$2);
+					if(!($$->exptype)){
+						gtf=1;
+						rout<<"error:bad type '++' at line :"<<lineno<<endl;
+						}
+
+					}
+	|	ALGCTMINUS valueexpr %prec ALGCTMINUSP	{
+					$$=makenodeS($2,ALGCTMINUSPK);
+					$$->exptype=checkleft(ALGCTMINUSPK,$2);
+					if(!($$->exptype)){
+						gtf=1;
+						rout<<"error:bad type '--' at line :"<<lineno<<endl;
+						}
+					
+					}
 	|	LBRACESS valueexpr RBRACESS	{$$=$2;}
-	|	valueexpr POINT valueexpr	%prec CLASSMC {$$=makenodeT($1,$3,POINTK);}
+	
 //	|	LBRACESS valueexpr RBRACESS {$$=$2;}
 	;
-calexpr	:	expr ALGCADD expr %prec ALGCADD	{$$=makenodeT($1,$3,ALGCADDK);}
-	|	expr ALGCMINUS expr	%prec ALGCMINUS{ $$=makenodeT($1,$3,ALGCMINUSK); }
-	|	expr ALGCMUL expr	%prec ALGCMUL{ $$=makenodeT($1,$3,ALGCMULK); }
-	|	expr ALGCDIV expr	{ $$=makenodeT($1,$3,ALGCDIVK); }
-	|	expr ALGCMOD expr	{$$=makenodeT($1,$3,ALGCMODK);}						
+calexpr	:	expr ALGCADD expr %prec ALGCADD	{
+					$$=makenodeT($1,$3,ALGCADDK);
+					$$->exptype=checkOp(ALGCADDK,$1->exptype,$3->exptype);
+					if(!($$->exptype)){
+						gtf=1;
+						rout<<"error:bad type '+' at line :"<<lineno<<endl;
+						}
+					
+					}
+	|	expr ALGCMINUS expr	%prec ALGCMINUS{ 
+					$$=makenodeT($1,$3,ALGCMINUSK);
+					$$->exptype=checkOp(ALGCMINUSK,$1->exptype,$3->exptype);
+					if(!($$->exptype)){
+						gtf=1;
+						rout<<"error:bad type '-' at line :"<<lineno<<endl;
+						}
+					
+					 }
+	|	expr ALGCMUL expr	%prec ALGCMUL{ 
+					$$=makenodeT($1,$3,ALGCMULK); 
+					$$->exptype=checkOp(ALGCMULK,$1->exptype,$3->exptype);
+					if(!($$->exptype)){
+						gtf=1;
+						rout<<"error:bad type '*' at line :"<<lineno<<endl;
+						}
+					
+					}
+	|	expr ALGCDIV expr	{ $$=makenodeT($1,$3,ALGCDIVK); 
+	
+					$$->exptype=checkOp(ALGCDIVK,$1->exptype,$3->exptype);
+					if(!($$->exptype)){
+						gtf=1;
+						rout<<"error:bad type '/' at line :"<<lineno<<endl;
+						}
+	}
+	|	expr ALGCMOD expr	{$$=makenodeT($1,$3,ALGCMODK);
+					$$->exptype=checkOp(ALGCMODK,$1->exptype,$3->exptype);
+					if(!($$->exptype)){
+						gtf=1;
+						rout<<"error:bad type '%' at line :"<<lineno<<endl;
+						}
+	
+		}						
 							
 	|	LBRACESS calexpr RBRACESS	{ $$=$2;}//这里的括号是不会产生的作用域的!!
-	|	ALGCMINUS expr %prec UMINUS	{$$=makenodeS($2,UMINUSK);}
+	|	ALGCMINUS expr %prec UMINUS	{$$=makenodeS($2,UMINUSK);
+					$$->exptype=checkOp(UMINUSK,$1->exptype,NULL);
+					if(!($$->exptype)){
+						gtf=1;
+						rout<<"error:bad type 'uminus' at line :"<<lineno<<endl;
+						}
+	
+	
+	}
 	
 	|	NUMBERD		{$$=$1;$$->exptype=new CType(CINT);}
 	|	DIGIT	{$$=$1;$$->exptype=new CType(CINT);}
@@ -574,39 +700,190 @@ calexpr	:	expr ALGCADD expr %prec ALGCADD	{$$=makenodeT($1,$3,ALGCADDK);}
 	|	STRING		{$$=$1;$$->exptype=new CType(CSTRING);}
 	|	ONECHAR		{$$=$1;$$->exptype=new CType(CCHAR);}
 	//需要左值 ,由于类、数组、指针的加入，不能直接写ID
+	//需要左值的运算将会检查是否左值
+	
+	|	valueexpr ALGCTADD %prec ALGCTADDB		{
+					$$=makenodeS($1,ALGCTADDBK);
+					$$->exptype=checkleft(ALGCTADDBK,$1);
+					if($$->exptype==NULL){
+						gtf=1;
+						rout<<"error:bad type '++' at line :"<<lineno<<endl;
+					}
+					
+					
+					}
+	|	valueexpr ALGCTMINUS %prec ALGCTMINUSB		{
+					$$=makenodeS($1,ALGCTMINUSBK);
+					$$->exptype=checkleft(ALGCTMINUSBK,$1);
+					if($$->exptype==NULL){
+						gtf=1;
+						rout<<"error:bad type '--' at line :"<<lineno<<endl;
+					}
+					
+					}
 
-	|	valueexpr ALGCTADD %prec ALGCTADDB		{$$=makenodeS($1,ALGCTADDBK);}
-	|	valueexpr ALGCTMINUS %prec ALGCTMINUSB		{$$=makenodeS($1,ALGCTMINUSBK);}
-	|	LGCCN expr	{$$=makenodeS($2,LGCCNK);}
-	|	BTCN expr	{$$=makenodeS($2,BTCNK);}
-	|	expr BTCRIGHT expr	{$$=makenodeT($1,$3,BTCRIGHTK);}
-	|	expr BTCLEFT expr	{$$=makenodeT($1,$3,BTCLEFTK);}
-	|	expr LGCCMOREEQ expr{$$=makenodeT($1,$3,LGCCMOREEQK);}
-	|	expr LGCCLESSEQ expr{$$=makenodeT($1,$3,LGCCLESSEQK);}
+
+	|	BTCN expr	{$$=makenodeS($2,BTCNK);
+					$$->exptype=checkOp(BTCNK,$2->exptype,NULL);
+					if($$->exptype==NULL){
+						gtf=1;
+						rout<<"error:bad type '~' at line :"<<lineno<<endl;
+					}
+	
+	}
+	
+	|	expr BTCRIGHT expr	{$$=makenodeT($1,$3,BTCRIGHTK);
+					$$->exptype=checkOp(BTCRIGHTK,$1->exptype,$3->exptype);
+					//$$->exptype=checkOp(BTCNK,$2->exptype);
+					if($$->exptype==NULL){
+						gtf=1;
+						rout<<"error:bad type '>>' at line :"<<lineno<<endl;
+					}
+	
+	}
+	|	expr BTCLEFT expr	{$$=makenodeT($1,$3,BTCLEFTK);
+					$$->exptype=checkOp(BTCLEFTK,$1->exptype,$3->exptype);
+					if($$->exptype==NULL){
+						gtf=1;
+						rout<<"error:bad type '<<' at line :"<<lineno<<endl;
+					}
+	
+	}
+	|	expr BTCAND expr{$$=makenodeT($1,$3,BTCANDK);
+						$$->exptype=checkOp(BTCANDK,$1->exptype,$3->exptype);
+					if($$->exptype==NULL){
+						gtf=1;
+						rout<<"error:bad type '&' at line :"<<lineno<<endl;
+					}
+	}
+	|	expr BTCOR expr{$$=makenodeT($1,$3,BTCORK);
+						$$->exptype=checkOp(BTCORK,$1->exptype,$3->exptype);
+					if($$->exptype==NULL){
+						gtf=1;
+						rout<<"error:bad type '||' at line :"<<lineno<<endl;
+					}
+			}
+	|	expr BTCYH expr{$$=makenodeT($1,$3,BTCYHK);
+						$$->exptype=checkOp(BTCYHK,$1->exptype,$3->exptype);
+					if($$->exptype==NULL){
+						gtf=1;
+						rout<<"error:bad type '^' at line :"<<lineno<<endl;
+					}
+					}
+	//函数使用
+	|	ID LBRACESS exprlist RBRACESS %prec FUNCUSE	{$$=makenodeT($1,$3,FUNCK);
+					$$->exptype=checkfunc($1->attri.name,$3->exptype);
+					if($$->exptype==NULL){
+						gtf=1;
+						rout<<"error:bad type 'func' at line :"<<lineno<<endl;
+					}
+	
+	}
+
+	|	valueexpr CLASSMC ID LBRACESS exprlist RBRACESS %prec FUNCUSE	{
+					TreeNode*t=makenodeT($3,$5,FUNCK);
+					$$=makenodeT($1,t,CLASSMCK);
+					$$->exptype=checkclass(CLASSMCK,$1->exptype,$3->attri.name,$5->exptype);
+					if($$->exptype==NULL){
+						gtf=1;
+						rout<<"error:bad type 'func' at line :"<<lineno<<endl;
+					}
+					
+					}
+	|	valueexpr POINT ID LBRACESS exprlist RBRACESS %prec FUNCUSE	{
+					TreeNode*t=makenodeT($3,$5,FUNCK);
+					$$=makenodeT($1,t,POINTK);
+					$$->exptype=checkclass(POINTK,$1->exptype,$3->attri.name,$5->exptype);
+					if($$->exptype==NULL){
+						gtf=1;
+						rout<<"error:bad type 'func' at line :"<<lineno<<endl;
+					}
+		}
+	|	ID LBRACESS  RBRACESS %prec FUNCUSE	{$$=makenodeS($1,FUNCK);
+					$$->exptype=checkfunc($1->attri.name,new CType(CVOID));
+					if($$->exptype==NULL){
+						gtf=1;
+						rout<<"error:bad type 'func' at line :"<<lineno<<endl;
+					}
+	
+	}
+	
+	|	valueexpr CLASSMC ID LBRACESS  RBRACESS %prec FUNCUSE	{
+					TreeNode*t=makenodeS($3,FUNCK);
+					$$=makenodeT($1,t,CLASSMCK);
+					$$->exptype=checkclass(CLASSMCK,$1->exptype,$3->attri.name,new CType(CVOID));
+					if($$->exptype==NULL){
+						gtf=1;
+						rout<<"error:bad type 'func' at line :"<<lineno<<endl;
+					}
+					
+					}
+	|	valueexpr POINT ID LBRACESS  RBRACESS %prec FUNCUSE	{
+					TreeNode*t=makenodeS($3,FUNCK);
+					$$=makenodeT($1,t,POINTK);
+					$$->exptype=checkclass(POINTK,$1->exptype,$3->attri.name,new CType(CVOID));
+					if($$->exptype==NULL){
+						gtf=1;
+						rout<<"error:bad type 'func' at line :"<<lineno<<endl;
+					}
+					}
+					
+	//逻辑运算
+	|	LGCCN expr	{$$=makenodeS($2,LGCCNK);
+					//$$->exptype=checkOp(
+	}
+	|	expr LGCCMOREEQ expr{$$=makenodeT($1,$3,LGCCMOREEQK);
+					/*$$->exptype=checkOp(BTCLEFTK,$1->exptype,$3->exptype);
+					if($$->exptype==NULL){
+						gtf=1;
+						rout<<"error:bad type '<<' at line :"<<lineno<<endl;
+					}*/
+	
+	}
+	|	expr LGCCLESSEQ expr{$$=makenodeT($1,$3,LGCCLESSEQK);
+				/*		$$->exptype=checkOp(BTCLEFTK,$1->exptype,$3->exptype);
+					if($$->exptype==NULL){
+						gtf=1;
+						rout<<"error:bad type '<<' at line :"<<lineno<<endl;
+					}*/
+	}
 	|	expr LBRACES expr %prec LGCCMORE{$$=makenodeT($1,$3,LGCCLESSK);}
 	|	expr RBRACES expr %prec LGCCLESS{$$=makenodeT($1,$3,LGCCMOREK);}
 	|	expr LGCCEQ expr{$$=makenodeT($1,$3,LGCCEQK);}
 	|	expr LGCCNEQ expr{$$=makenodeT($1,$3,LGCCNK);}
-	|	expr BTCAND expr{$$=makenodeT($1,$3,BTCANDK);}
-	|	expr BTCOR expr{$$=makenodeT($1,$3,BTCORK);}
-	|	expr BTCYH expr{$$=makenodeT($1,$3,BTCYHK);}
-	|	expr LGCCAND expr{$$=makenodeT($1,$3,LGCCANDK);}
-	|	expr LGCCOR expr{$$=makenodeT($1,$3,LGCCORK);}
-		//语法分析过程中（建立语法树过程中）没有对ID的合法性做要求。
-					//这是因为这时的func符号表尚未完全
-	|	ID LBRACESS exprlist RBRACESS %prec FUNCUSE	{$$=makenodeT($1,$3,FUNCK);}
-	|	valueexpr CLASSMC ID LBRACESS exprlist RBRACESS %prec FUNCUSE	{TreeNode*t=makenodeT($3,$5,FUNCK);$$=makenodeT($1,t,CLASSMCK);}
-	|	valueexpr POINT ID LBRACESS exprlist RBRACESS %prec FUNCUSE	{TreeNode*t=makenodeT($3,$5,FUNCK);$$=makenodeT($1,t,POINTK);}
 	
-	|	ID LBRACESS  RBRACESS %prec FUNCUSE	{$$=makenodeS($1,FUNCK);}
-	|	valueexpr CLASSMC ID LBRACESS  RBRACESS %prec FUNCUSE	{TreeNode*t=makenodeS($3,FUNCK);$$=makenodeT($1,t,CLASSMCK);}
-	|	valueexpr POINT ID LBRACESS  RBRACESS %prec FUNCUSE	{TreeNode*t=makenodeS($3,FUNCK);$$=makenodeT($1,t,POINTK);}
+
+
+	|	expr LGCCAND expr{$$=makenodeT($1,$3,LGCCANDK);
+				/*		$$->exptype=checkOp(BTCLEFTK,$1->exptype,$3->exptype);
+					if($$->exptype==NULL){
+						gtf=1;
+						rout<<"error:bad type '<<' at line :"<<lineno<<endl;
+					}*/
+	}
+	|	expr LGCCOR expr{$$=makenodeT($1,$3,LGCCORK);}
+	
+
+	
 	//左值
-	|	expr EQ expr	%prec EQ	{$$=makenodeT($1,$3,EQUEK);}
+	|	expr EQ expr	%prec EQ	{$$=makenodeT($1,$3,EQUEK);
+					$$->exptype=checkEqual($1,$3->exptype);
+					if($$->exptype==NULL){
+						gtf=1;
+						rout<<"error:bad type '=' at line :"<<lineno<<endl;
+					}
+	}
 //	|	valueexpr EQ expr %prec EQ	{$$=makenodeT($1,$3,EQUEK);}//赋值表达式
 	
 	
-	|	BTCAND expr %prec GETADDR	{$$=makenodeS($2,GETADDRK);}
+	|	BTCAND expr %prec GETADDR	{$$=makenodeS($2,GETADDRK);
+					$$->exptype=checkleft(GETADDRK,$2);
+					if($$->exptype==NULL){
+						gtf=1;
+						rout<<"error:bad type '&' at line :"<<lineno<<endl;
+					}
+	
+	}
 //关于new 这应该属于运行时了吧...
 //	|	NEW basetype LBRACEM expr RBRACEM 	{$$=makenodeT($2,$4,NEWK);$$->exptype=CType::pointer($2->exptype);}
 /*	|	NEW ID LBRACEM expr RBRACEM		{
@@ -628,7 +905,7 @@ comstmt:	LBRACE comstmt RBRACE comstmt	{
 returnstmt:	RETURN expr SEMI {
 			$$=newStmtsNode(RETURNK);
 			$$->child[0]=$2;
-			
+			$$->exptype=new CType($2->exptype);
 		}
 	;
 	
@@ -852,7 +1129,7 @@ forstmt:	FOR LBRACESS expr SEMI expr SEMI expr RBRACESS stmtcomstmt	{
 	;
 
 
-//cout可能会与表达式的<<冲突，
+//cout
 
 coutlist:	coutlist BTCLEFT expr{
 			$$=$1;
@@ -870,6 +1147,8 @@ coutstmt:	COUT coutlist SEMI	{
 			$$->child[0]=$2;
 }
 	;
+	
+//cin
 cinlist:	cinlist BTCRIGHT valueexpr	{
 			$$=$1;
 			lastt->sibling=$3;
@@ -888,22 +1167,23 @@ cinstmt:	CIN cinlist SEMI{
 	;
 
 
-
+//目前函数不支持类类型作为参数以及类类型作为返回值
+//因此进行类型检查时只需要code一样即可
 typep:	basetype	
 	|	basetype ALGCMUL	{
 		ExpType type=$1->type;
 		ExpType nt=(type==INTK ?INTSK:(type==CHARK ?CHARSK:FLOATSK));
-		
-		
-		
 		$1->type=nt;
 		$$=$1;
 		//类型
 		$$->exptype=CType::pointer($1->exptype);
 	}
 	;
-//应该是一群basek的list
-//这边对应的type在遍历语法树的时候再建立
+	
+//应该是一群basek的list//
+//将会直接进行类型检查，所以一定确保写东西的时候
+//先定义后使用
+//这里类型的标准是typep
 typeidlist:	typeidlist COMMA typep ID	{
 		TreeNode*t=newStmtsNode(BASEK);
 		t->child[0]=$3;
@@ -911,6 +1191,9 @@ typeidlist:	typeidlist COMMA typep ID	{
 		$$=$1;
 		lastt->sibling=t;
 		lastt=t;
+		//类型：由于直接是给函数用的，于是直接定义成dicar
+		$$->exptype=CType::dicar($1->exptype,$3->exptype);
+		
 }
 	|	typeidlist COMMA typep ID LBRACEM NUMBERD RBRACEM {
 			TreeNode*t=newStmtsNode(BASEK);
@@ -923,6 +1206,8 @@ typeidlist:	typeidlist COMMA typep ID	{
 			lastt->sibling=t;
 			$$=$1;
 			lastt=t;
+			//类型：由于直接是给函数用的，于是直接定义成dicar
+			$$->exptype=CType::dicar($1->exptype,CType::array0($6->attri.val,$3->exptype));
 	}
 	
 	|	typep ID	{
@@ -931,6 +1216,8 @@ typeidlist:	typeidlist COMMA typep ID	{
 			t->child[1]=$2;
 			$$=t;
 			lastt=t;
+			//类型
+			$$->exptype=$1->exptype;
 	}
 	|	typep ID LBRACEM NUMBERD RBRACEM	{
 			TreeNode*t=newStmtsNode(BASEK);
@@ -940,7 +1227,9 @@ typeidlist:	typeidlist COMMA typep ID	{
 			te->child[1]=$4;
 			t->child[0]=$1;
 			t->child[1]=te;
-			lastt=t;	
+			lastt=t;
+			//类型
+			$$->exptype=CType::array0($4->attri.val,$1->exptype);	
 }
 	;
 /*
@@ -963,20 +1252,29 @@ funcstmt:	basetype ID LBRACESS typeidlist RBRACESS SEMI	{cout<<"funcstmt"<<endl;
 //函数的话，是不允许在函数中被定义的，全局区域也不允许出现comstmt
 //所以插入ID一定是在最底层的符号表插入，
 //关于类，其函数允许在全局也允许在类中。类有自己的作用域，类并不想和其他用同一个符号表
-//因此这些普通函数，他们全部在最底层符号表。
+//因此这些普通函数，他们全部在自己的符号表。
 
+//为了更加简洁地实现符号表的功能
+//只能委屈语法部分变得繁杂了√
+
+//关于return语句的问题：需要func中包含return语句，其type
+//应该与表示的basetype一样
+//怎么实现呢？
 funcdef:	basetype ID LBRACESS typeidlist RBRACESS comstmt	{
 					$$=newStmtsNode(FUNCDK);
 					$$->child[0]=$1;
 					$$->child[1]=$2;
 					$$->child[2]=$4;
+					$$->exptype=CType::func($1->exptype,$4->exptype);
 					$$->sibling=$6;
 					if(funcmap.find($2->attri.name)!=funcmap.end())rout<<"error at line :"<<lineno<<"redefined func:"<<$2->attri.name<<endl; 
 					else{
 						Node*n=new Node("FUNC",$2->attri.name);
-						n->setType($1->exptype);
+						n->exptype=$$->exptype;//符号表中的exptype
+					//	n->setType($1->exptype);
 						funcmap[$2->attri.name]=n;//$$;
 						cout<<$2->attri.name<<":my addr is:"<<funcmap[$2->attri.name]<<endl;
+						
 					}
 					
 }
@@ -984,6 +1282,9 @@ funcdef:	basetype ID LBRACESS typeidlist RBRACESS comstmt	{
 					$$=newStmtsNode(FUNCDK);
 					ExpType type=(($1->type==INTK ? INTSK:($1->type==CHARK ? CHARSK:FLOATSK)));
 					TreeNode*tmp=newTypeNode(type);
+					//类型
+					$$->exptype=CType::func(CType::pointer($1->exptype),$5->exptype);
+					
 					delete $1;
 					$$->child[0]=tmp;
 					$$->child[1]=$3;
@@ -992,22 +1293,28 @@ funcdef:	basetype ID LBRACESS typeidlist RBRACESS comstmt	{
 					if(funcmap.find($3->attri.name)!=funcmap.end())rout<<"error at line :"<<lineno<<"redefined func:"<<$3->attri.name<<endl; 
 					else{
 						Node*n=new Node("FUNC",$3->attri.name);
-						n->setType($1->exptype);
+					//	n->setType($1->exptype);
+						n->exptype=$$->exptype;//符号表中的exptype
 						funcmap[$3->attri.name]=n;//$$;
 						cout<<$3->attri.name<<":my addr is:"<<funcmap[$3->attri.name]<<endl;
 					}
 }
+//无参数：需要加VOID
 	|	basetype ID LBRACESS  RBRACESS comstmt	{
 					$$=newStmtsNode(FUNCDK);
 					$$->child[0]=$1;
 					$$->child[1]=$2;
 					$$->child[2]=NULL;
 					$$->sibling=$5;
+					//符号
+					$$->exptype=CType::func($1->exptype,new CType(CVOID));
+					
 					//cout<<($$->sibling==NULL)<<"the func's sibling is null?"<<endl;
 					if(funcmap.find($2->attri.name)!=funcmap.end())rout<<"error at line :"<<lineno<<" redefined func:"<<$2->attri.name<<endl; 
 					else{
 						Node*n=new Node("FUNC",$2->attri.name);
-						n->setType($1->exptype);
+					//	n->setType($1->exptype);
+						n->exptype=$$->exptype;//符号表中的exptype
 						funcmap[$2->attri.name]=n;//$$;
 						cout<<$2->attri.name<<":my addr is:"<<funcmap[$2->attri.name]<<endl;
 					}
@@ -1017,6 +1324,8 @@ funcdef:	basetype ID LBRACESS typeidlist RBRACESS comstmt	{
 					$$=newStmtsNode(FUNCDK);
 					ExpType type=(($1->type==INTK ? INTSK:($1->type==CHARK ? CHARSK:FLOATSK)));
 					TreeNode*tmp=newTypeNode(type);
+					//符号
+					$$->exptype=CType::func(CType::pointer($1->exptype),new CType(CVOID));
 					delete $1;
 					$$->child[0]=tmp;
 					$$->child[1]=$3;
@@ -1025,7 +1334,8 @@ funcdef:	basetype ID LBRACESS typeidlist RBRACESS comstmt	{
 					if(funcmap.find($3->attri.name)!=funcmap.end())rout<<"error at line :"<<lineno<<" redefined func:"<<$3->attri.name<<endl; 
 					else{
 						Node*n=new Node("FUNC",$3->attri.name);
-						n->setType($1->exptype);
+					//	n->setType($1->exptype);
+						n->exptype=$$->exptype;//符号
 						funcmap[$3->attri.name]=n;//$$;
 						cout<<$3->attri.name<<":my addr is:"<<funcmap[$3->attri.name]<<endl;
 					}
@@ -1034,25 +1344,27 @@ funcdef:	basetype ID LBRACESS typeidlist RBRACESS comstmt	{
 
 //emmmmain函数不接受传参...
 //返回值....
+//设置bool，一旦有发现的错误就设置为true，完成之后停止
+//不会生成汇编代码
 funcdefmain:	INT MAIN LBRACESS RBRACESS comstmt	{
 		$$=newStmtsNode(MAINK);
 		$$->type=INTK;
 		$$->child[0]=newTypeNode(INTK);
 		$$->child[1]=$5;
+		mainnode=$$;//
 	}
 	
 	|	INT MAIN LBRACESS error  comstmt{
-			$$=newStmtsNode(MAINK);
+		$$=newStmtsNode(MAINK);
 		$$->type=INTK;
 		$$->child[0]=newTypeNode(INTK);
 		$$->child[1]=$5;
 		rout<<"error at line :"<<lineno<<" missing ')'"<<endl;
+		
 		}
 	
 	;
 	
-//func可以被使用。在expr中可以有func的使用。现在还没加，我要看一看func
-//到底是怎么用的...
 
 //类
 //有一次一直循环，是因为输入为空的时候还允许递归，所以就一直匹配
@@ -1063,26 +1375,36 @@ protype:	PUBLIC
 	;//我也不懂为啥要这个...有很大概率应该是不会实现了...*/
 	
 
-//类的符号在遍历语法树的时候创建并检查
-
+//
+//
 inclass:
 
 	inclass basetypestmt	{$$=$1;lastt->sibling=$2;lastt=$2;}
 //	|	inclass funcdef	{cout<<"2in"<<endl;}
-//	|	inclass funcstmt	{cout<<"3in"<<endl;}
+//	在类的作用域中，函数会被加到类提供的相应字段
 	|	inclass funcdef	{$$=$1;lastt->sibling=$2;lastt=$2;}
 	|	basetypestmt	{$$=$1;lastt=$$;}
 //	|	funcstmt	{cout<<"7in"<<endl;}
 	|	funcdef	{$$=$1;lastt=$$;}
 	;
-
-classdef:	CLASS ID LBRACE inclass RBRACE SEMI	{
+//因为类的大括号将会创建一个新的作用域。
+//inclass中的东西都在这个作用域
+//这个top由于}的关系在storesymbol顶层。
+classdef:	class ID LBRACE inclass RBRACE SEMI	{
+		ClassNode*n=new ClassNode($2->attri.name);
+		n->classv=storesymbol.top();
+		cout<<"llll"<<(n->classv)->findexist("m");
+//		allsymbol.pop();
 		$$=newStmtsNode(CLASSK);
-		if(classmap.find($2->attri.name)!=classmap.end())
+		if(classmap.find($2->attri.name)!=classmap.end()){
+			gtf=1;
 			rout<<"error at line:"<<lineno<<"   redefine of class:"<<$2->attri.name<<endl;
-			
+		}
 		else{
-			classmap[$2->attri.name]=new ClassNode($2->attri.name);
+		
+			n->classf=&(funcmap);
+			funcmap=*tofuncmap;
+			classmap[$2->attri.name]=n;
 			cout<<$2->attri.name<<":my addr :"<<classmap[$2->attri.name]<<endl;	
 		}
 		
@@ -1090,18 +1412,53 @@ classdef:	CLASS ID LBRACE inclass RBRACE SEMI	{
 		$$->child[1]=$4;
 		//类型
 		$$->exptype=new CType($2->attri.name);
+		
+		cout<<"更换回来"<<endl;
 		//$$->w
 		//其他的都会在自己的basetypestmt里面有自己的类型的编码。
 		//关于ID声明变量
 	}
-//	|	CLASS ID LBRACE inclass RBRACE error
+	//忘加分号：其实处理都一样，但是标识出有错误输出
+	|	class ID LBRACE inclass RBRACE error{
+		rout<<"missing ; ?  at line:"<<lineno<<endl;
+		gtf=1;
+		ClassNode*n=new ClassNode($2->attri.name);
+//		n->classv=storesymbol.top();
+		allsymbol.pop();
+		$$=newStmtsNode(CLASSK);
+		if(classmap.find($2->attri.name)!=classmap.end()){
+			gtf=1;
+			rout<<"error at line:"<<lineno<<"   redefine of class:"<<$2->attri.name<<endl;
+		}
+		else{
+		
+			n->classf=&(funcmap);
+			funcmap=*tofuncmap;
+			classmap[$2->attri.name]=n;
+			cout<<$2->attri.name<<":my addr :"<<classmap[$2->attri.name]<<endl;	
+		}
+		
+		$$->child[0]=$2;
+		$$->child[1]=$4;
+		//类型
+		$$->exptype=new CType($2->attri.name);
+		
+		cout<<"更换回来"<<endl;
+	
+	
+	
+	}
 
-
-
-//}
 	;	
 	
-
+class :	CLASS	{
+	//	allsymbol.push(new CHash());
+		tofuncmap=&funcmap;
+		funcmap=*(new hash_map<string,Node*>());
+		//进入类的作用域，将类中的变量信息存储
+		//question类与变量
+		cout<<"更换"<<endl;
+};
 	
 
 %%
@@ -1248,12 +1605,15 @@ TreeNode*newTypeNode(ExpType type,string classname){
   return t;
 }
 
+
+int Fcode::num = 0;
+int Fcode::labelnum = 0;
 int main(int argc, char *argv[])
 {
 int n = 1;
 	
 //	allsymbol.push(symbtb);
-	Fcode::initnum();
+//	Fcode::initnum();
 	mylexer lexer;
 	myparser parser;
 	if (parser.yycreate(&lexer)) {
@@ -1274,8 +1634,10 @@ int n = 1;
 			cout<<"u may also wanna check file result.txt to find out if there are some other grammer mistakes"<<endl;
 		}
 		else{
+			if(gtf){
 			cout<<"error occurs,the tree cannot be built"<<endl;
 			cout<<"see more info in file result.txt"<<endl;
+			}
 		}
 		//storesymbol
 		}

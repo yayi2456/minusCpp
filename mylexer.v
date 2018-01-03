@@ -1,7 +1,7 @@
 #############################################################################
 #                     U N R E G I S T E R E D   C O P Y
 # 
-# You are on day 109 of your 30 day trial period.
+# You are on day 110 of your 30 day trial period.
 # 
 # This file was produced by an UNREGISTERED COPY of Parser Generator. It is
 # for evaluation purposes only. If you continue to use Parser Generator 30
@@ -18,8 +18,8 @@
 # mylexer.v
 # Lex verbose file generated from mylexer.l.
 # 
-# Date: 01/02/18
-# Time: 22:59:50
+# Date: 01/04/18
+# Time: 02:52:38
 # 
 # ALex Version: 2.07
 #############################################################################
@@ -87,7 +87,7 @@
 
    29  delete
 
-   30  \/\/.*|\/\*([^\/\*]|\n)*\*\/
+   30  \/\/.*|\/\*(([^\*]|\n)*|([^\/]|\n)*|([^\*\/]|\n)+|([^\/]|\n)*)*\*\/
 
    31  \{
 
@@ -688,6 +688,7 @@ state 58
 	0x00 - 0x29 (42)   goto 58
 	0x2a               goto 91
 	0x2b - 0x2e (4)    goto 58
+	0x2f               goto 58
 	0x30 - 0xff (208)  goto 58
 
 
@@ -968,7 +969,11 @@ state 90
 
 
 state 91
+	0x00 - 0x29 (42)   goto 58
+	0x2a               goto 91
+	0x2b - 0x2e (4)    goto 58
 	0x2f               goto 114
+	0x30 - 0xff (208)  goto 58
 
 
 state 92
@@ -1205,6 +1210,12 @@ state 113
 
 
 state 114
+	0x00 - 0x29 (42)   goto 58
+	0x2a               goto 91
+	0x2b - 0x2e (4)    goto 58
+	0x2f               goto 58
+	0x30 - 0xff (208)  goto 58
+
 	match 30
 
 

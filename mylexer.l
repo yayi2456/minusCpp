@@ -95,7 +95,9 @@ ENDL endl
 BLANK \t|" "
 ENTER \n
 
-COMMENT \/\/.*|\/\*([^\/\*]|{ENTER})*\*\/
+COMMENT \/\/.*|\/\*(([^\*]|{ENTER})*|([^\/]|{ENTER})*|([^\*\/]|{ENTER})+|([^\/]|{ENTER})*)*\*\/
+
+//\/\*([^\/\*]|{ENTER})*\*\/
 
 ID [a-zA-Z_][a-zA-Z_0-9]*
 

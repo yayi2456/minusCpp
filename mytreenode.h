@@ -2,6 +2,7 @@
 #define MAXCHILD 3
 #include "mytype.h"
 #include<string>
+
 typedef enum{EXPK,STMTSK,TYPEK}NodeKind;
 typedef enum{OPK,CONSTK,IDK}ExpKind;
 
@@ -10,8 +11,8 @@ typedef enum { INTK, CHARK, INTSK,CHARSK,STRINGK,FLOATK,FLOATSK,NOTK,VOIDK }ExpT
 
 typedef enum{ALGCADDK,ALGCMINUSK,UMINUSK,ALGCMULK,ALGCDIVK,ALGCMODK,ALGCTADDPK,ALGCTMINUSPK,ALGCTADDBK,ALGCTMINUSBK,
 			LGCCNK,LGCCLESSK,LGCCLESSEQK,LGCCMOREK,LGCCMOREEQK,LGCCEQK,LGCC,BTCNK,BTCLEFTK,BTCRIGHTK,
-			BTCYHK,BTCORK,BTCANDK,LGCCORK,LGCCANDK,FUNCK,EQUEK,NEWK,DELETEK,ARRAYCK,CLASSRSTK,CLASSMCK,POINTK
-			GETADDRK,GETCONTENTK, IFGOTOK,GOTOK,CALLK,PARAMK}OpType;//函数也是一种expr。如果函数的参数比较多....记录函数的树的顶点位置。类暂不处理
+			BTCYHK,BTCORK,BTCANDK,LGCCORK,LGCCANDK,FUNCK,EQUEK,NEWK,DELETEK,ARRAYCK,CLASSRSTK,CLASSMCK,POINTK,
+			GETADDRK,GETCONTENTK, IFGOTOK,GOTOK,CALLK,PARAMK,COUTOPK,CINOPK,COUTPK,CINPK}OpType;//函数也是一种expr。如果函数的参数比较多....记录函数的树的顶点位置。类暂不处理
 		//所有的逻辑运算符 都是IFRELOPGOTOK
 typedef enum { PUBLICK, PRIVATEK, PROTECTEDK }StatusType;
 //typedef enum { FUCDEF, CLASSDEF };
@@ -26,8 +27,9 @@ public:
 	static int num;
 	static int labelnum;
 	//用于控制语句
-	string truep;
-	string falsep;
+	string truel;
+	string falsel;
+	string nextl;
 	Fcode(OpType o, string a1, string a2, string r) {
 		op = o;
 		arg1 = a1;
@@ -50,8 +52,8 @@ public:
 	static string genLabel() {
 		return "@_" + labelnum++;
 	}
-
 };
+
 class Fcodes {
 public:
 	Fcode*head;
@@ -78,57 +80,7 @@ public:
 			FUNCK,EQUEK,NEWK,DELETEK,ARRAYCK,CLASSRSTK,CLASSMCK,//->
 			GETADDRK,GETCONTENTK}OpType;
 			*/
-	static Fcodes*gencode(OpType op,string arg1,string arg2,string result) {
-		//加减乘除
-		if (op == ALGCADDK || op == ALGCMINUSK || op == ALGCMULK || op == ALGCMODK) {
-			string tmp = Fcode::genTmp();
-			Fcode*c1 = new Fcode(op, arg1, arg2, tmp);
-	//		Fcode*c2 = new Fcode(EQUEK, tmp, "", tmp); result仅仅用于EQUAEK
-			return new Fcodes(c1，c1);
-		}
-		//负 取地址 取内容 非 
-		else if (op == UMINUSK || op == GETCONTENTK || op == GETADDRK || op == BTCNK) {
-			string tmp = Fcode::genTmp();
-			Fcode*c1 = new Fcode(op, arg1, "", tmp);
-			return new Fcodes(c1, c1);
-		}
-		//前增量 前减量
-		else if (op == ALGCTADDPK || op == ALGCTMINUSPK){
-			string tmp = Fcode::genTmp();
-			Fcode*c1 = new Fcode((op == ALGCTADDPK ? ALGCTADDK : ALGCTMINUSK), arg1, "1", tmp);
-			Fcode*c2 = new Fcode(EQUEK, tmp, "", arg1);
-			c1->combine2(c2);
-			return new Fcodes(c1, c2);
-		}
-		//后增量 后减量：genLabel
-		else if (op == ALGCTADDBK || op == ALGCTMINUSBK) {
-			//???
-			string tmp = Fcode::genTmp();
-			Fcode*c1 = new Fcode(EQUEK, arg1, "", tmp);
-			return new Fcodes(c1, c1);
-		}
-		else if (op == BTCLEFK || op == BTCRIGHTK || op == BTCYHK || op == BTCANDK || op == BTCORK) {
-			string tmp = Fcode::genTmp();
-			Fcode*c1 = new Fcode(op, arg1, arg2, tmp);
-			return new Fcodes(c1, c1);
-		}
-		//类成员选择处理（仅用于成员变量选择）
-		else if (op == CLASSMCK || op == POINTK) {
-			string tmp = Fcode::genTmp();
-			Fcode*c1 = new Fcode(op, arg1, arg2, tmp);
-			return new Fcodes(c1, c1);
-		}
-		//逻辑运算究竟要不要各自计算，这是一个问题。
-		
-	}
-	//逻辑运算：只能用于ifwhilefor判断，否则判错：因为没有设定bool类型（暂定）
-	//在stmt被处理的时候才会被处理，true与false
-	//逻辑非
-	static genlcode(TreeNode*s) {
-
-	}
-
-	//函数处理：
+	
 
 };
 
@@ -148,8 +100,8 @@ public:
 	TreeNode*child[MAXCHILD];
 	TreeNode*sibling;//声明多个变量，函数的变量列表
 	int lineno;
-	NodeKind nodekind;
-	Kind kind;
+	NodeKind nodekind;//type，exp还是stmt
+	Kind kind;//具体是哪种类型
 	Attri attri;
 	ExpType type;//yongyu表达式与函数
 	string classname;
@@ -158,7 +110,6 @@ public:
 	Fcodes*midcode;//用于中间代码生成
 
 };
-
 
 
 
